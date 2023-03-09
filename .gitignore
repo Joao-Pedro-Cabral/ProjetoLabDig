@@ -1,0 +1,6 @@
+# arquivos de simulação (QuestaSim ou ModelSim)
+modelsim.ini
+work/
+transcript
+*.wlf
+Makefile
