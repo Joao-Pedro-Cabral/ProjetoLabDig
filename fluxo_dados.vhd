@@ -42,6 +42,7 @@ entity fluxo_dados is
           chaves                   : in  std_logic_vector(11 downto 0);
           registraRC               : in  std_logic;
           limpaRC                  : in  std_logic;
+          registraSel              : in  std_logic;
 
           zeraT                    : in  std_logic;
           contaT                   : in  std_logic;
@@ -54,7 +55,6 @@ entity fluxo_dados is
           db_memoria               : out std_logic_vector(11 downto 0);
           jogada_correta           : out std_logic;
           jogada                   : out std_logic;
-          db_jogada_feita          : out std_logic_vector(11 downto 0);
 
           fimL                     : out std_logic;
           fimE                     : out std_logic;
@@ -70,7 +70,8 @@ architecture estrutural of fluxo_dados is
   signal s_rodada        : std_logic_vector(3 downto 0);
   signal s_endereco      : std_logic_vector(3 downto 0);
   signal s_jogada        : std_logic_vector(11 downto 0);
-
+  signal s_fimL          : std_logic_vector(15 downto 0);
+  signal s_rodada        : std_logic_vector(3 downto 0);
   signal s_dado          : std_logic_vector(11 downto 0);
   signal s_not_zeraCR    : std_logic;
   signal s_not_zeraE     : std_logic;
@@ -86,40 +87,35 @@ architecture estrutural of fluxo_dados is
         ld    : in  std_logic;
         ent   : in  std_logic;
         enp   : in  std_logic;
-        D     : in  std_logic_vector (11 downto 0);
-        Q     : out std_logic_vector (11 downto 0);
+        D     : in  std_logic_vector (3 downto 0);
+        Q     : out std_logic_vector (3 downto 0);
         rco   : out std_logic 
     );
   end component;
 
-  component comparador_85
+  component comparador
+    generic(
+      constant N : integer := 8
+    );
     port (
-        i_A3   : in  std_logic;
-        i_B3   : in  std_logic;
-        i_A2   : in  std_logic;
-        i_B2   : in  std_logic;
-        i_A1   : in  std_logic;
-        i_B1   : in  std_logic;
-        i_A0   : in  std_logic;
-        i_B0   : in  std_logic;
-        i_AGTB : in  std_logic;
-        i_ALTB : in  std_logic;
-        i_AEQB : in  std_logic;
-        o_AGTB : out std_logic;
-        o_ALTB : out std_logic;
-        o_AEQB : out std_logic
+      A       : in  std_logic_vector(N-1 downto 0);
+      B       : in  std_logic_vector(N-1 downto 0);
+      igual   : out std_logic
     );
   end component;
 
   component ram_16x4 is
-    port (
-       clk          : in  std_logic;
-       endereco     : in  std_logic_vector(3 downto 0);
-       dado_entrada : in  std_logic_vector(11 downto 0);
-       we           : in  std_logic;
-       ce           : in  std_logic;
-       dado_saida   : out std_logic_vector(11 downto 0)
+    generic(
+      size: natural := 12
     );
+     port (       
+         clk          : in  std_logic;
+         endereco     : in  std_logic_vector(3 downto 0);
+         dado_entrada : in  std_logic_vector(size-1 downto 0);
+         we           : in  std_logic;
+         ce           : in  std_logic;
+         dado_saida   : out std_logic_vector(size-1 downto 0)
+      );
   end component;
   
   component registrador_n is
@@ -159,6 +155,14 @@ component contador_m is
   );
 end component contador_m;
 
+component mux16x1 is
+    port(
+        w : in std_logic_vector(15 downto 0);
+        s : in std_logic_vector(3 downto 0);
+        f : out std_logic
+    );
+end mux16x1;
+
 begin
 
   -- sinais de controle ativos em alto
@@ -176,7 +180,7 @@ begin
       enp   => contaCR,
       D     => "0000",
       Q     => s_rodada,
-      rco   => fimL
+      rco   => open
     );
 
   contador_endereco: contador_163
@@ -191,44 +195,31 @@ begin
       rco   => fimE
     );
 
-  comparador_jogada: comparador_85
+  comparador_jogada: comparador
+    generic(
+      N => 12
+    )
     port map (
-      i_A3   => s_dado(3),
-      i_B3   => s_jogada(3),
-      i_A2   => s_dado(2),
-      i_B2   => s_jogada(2),
-      i_A1   => s_dado(1),
-      i_B1   => s_jogada(1),
-      i_A0   => s_dado(0),
-      i_B0   => s_jogada(0),
-      i_AGTB => '0',
-      i_ALTB => '0',
-      i_AEQB => '1',
-      o_AGTB => open, -- saidas nao usadas
-      o_ALTB => open,
-      o_AEQB => jogada_correta
+      A     => s_dado,
+      B     => s_jogada,
+      igual => jogada_correta
     );
 
-  comparador_endereco: comparador_85
+  comparador_endereco: comparador
+    generic(
+      N => 4
+    )
     port map (
-      i_A3   => s_rodada(3),
-      i_B3   => s_endereco(3),
-      i_A2   => s_rodada(2),
-      i_B2   => s_endereco(2),
-      i_A1   => s_rodada(1),
-      i_B1   => s_endereco(1),
-      i_A0   => s_rodada(0),
-      i_B0   => s_endereco(0),
-      i_AGTB => '0',
-      i_ALTB => '0',
-      i_AEQB => '1',
-      o_AGTB => open, -- saidas nao usadas
-      o_ALTB => open,
-      o_AEQB => enderecoIgualRodada
+      A     => s_rodada,
+      B     => s_endereco,
+      igual => enderecoIgualRodada
     );
 
-  --memoria: entity work.ram_16x4 (ram_mif)  -- usar esta linha para Intel Quartus
-  memoria: entity work.ram_16x4 (ram_modelsim) -- usar arquitetura para ModelSim
+  --memoria: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
+  memoria: entity work.ram (ram_modelsim) -- usar arquitetura para ModelSim
+    generic(
+      size => 12
+    )
     port map (
        clk          => clock,
        endereco     => s_endereco,
@@ -285,13 +276,49 @@ begin
         fim     => fimI,
         meio    => open
       );
+
+  registrador_rodada: registrador_n
+    generic map(
+      N => 4
+    )
+    port map(
+      clock  => clock,
+      clear  => limpaRC,
+      enable => registraSel,
+      D      => chaves(3 downto 0),
+      Q      => seletor_rodada,
+    );
    
+  multiplexador_rodada: mux16x1
+    port map(
+      w => s_fimL,
+      s => seletor_rodada,
+      f => fimL
+    );
+
+  -- Determinação dos possíveis fimL
+  s_fimL(0)  <= '0'; -- Inatingível 
+  s_fimL(1)  <= s_rodada(0);
+  s_fimL(2)  <= s_rodada(1);
+  s_fimL(3)  <= s_rodada(1) and s_rodada(0);
+  s_fimL(4)  <= s_rodada(2);
+  s_fimL(5)  <= s_rodada(2) and s_rodada(0);
+  s_fimL(6)  <= s_rodada(2) and s_rodada(1);
+  s_fimL(7)  <= s_rodada(2) and s_rodada(1) and s_rodada(0);
+  s_fimL(8)  <= s_rodada(3);
+  s_fimL(9)  <= s_rodada(3) and s_rodada(0);
+  s_fimL(10) <= s_rodada(3) and s_rodada(1);
+  s_fimL(11) <= s_rodada(3) and s_rodada(1) and s_rodada(0);
+  s_fimL(12) <= s_rodada(3) and s_rodada(2);
+  s_fimL(13) <= s_rodada(3) and s_rodada(2) and s_rodada(0);
+  s_fimL(14) <= s_rodada(3) and s_rodada(2) and s_rodada(1);
+  s_fimL(15) <= s_rodada(3) and s_rodada(2) and s_rodada(1) and s_rodada(0);
+  
   reset_ed        <= limpaRC;
   s_chaveacionada <= chaves(0) or chaves(1) or chaves(2) or chaves(3) or chaves(4) or chaves(5) or chaves (6) or chaves(7) or chaves(8) or chaves(9) or chaves(10) or chaves(11);
   db_rodada       <= s_rodada;
   db_contagem     <= s_endereco;
   db_memoria      <= s_dado;
-  db_jogada_feita <= s_jogada;
   jogada          <= pulso_out;
   
 end architecture estrutural;

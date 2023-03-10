@@ -1,13 +1,13 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
-entity mux16x1 IS
-port (w : in STD_LOGIC_VECTOR(15 downto 0) ;
-s : in STD_LOGIC_VECTOR(3 DOWNTO 0) ;
-f : out STD_LOGIC ) ;
-
-end mux16x1 ;
+entity mux16x1 is
+    port(
+        w : in std_logic_vector(15 downto 0);
+        s : in std_logic_vector(3 downto 0);
+        f : out std_logic
+    );
+end mux16x1;
 
 architecture structural of mux16to1 is
 component mux4x1 is
@@ -21,19 +21,13 @@ component mux4x1 is
     );
 end component mux4x1;
 
-signal m : STD_LOGIC_VECTOR(3 downto 0) ;
-begin
-Mux1: mux4x1 PORT MAP
-( w(0), w(1), w(2), w(3), s(1 DOWNTO 0), m(0) ) ;
-Mux2: mux4x1 PORT MAP
-( w(4), w(5), w(6), w(7), s(1 DOWNTO 0), m(1) ) ;
-Mux3: mux4x1 PORT MAP
-( w(8), w(9), w(10), w(11), s(1 DOWNTO 0), m(2) )
-;
-Mux4: mux4x1 PORT MAP
-( w(12), w(13), w(14), w(15), s(1 DOWNTO 0), m(3)
-);
-Mux5: mux4x1 PORT MAP
-( m(0), m(1), m(2), m(3), s(3 DOWNTO 2), f ) ;
+signal m : std_logic_vector(3 downto 0);
 
-end structural ;
+begin
+    Mux1: mux4x1 port map (w(0), w(1), w(2), w(3), s(1 downto 0), m(0));
+    Mux2: mux4x1 port map (w(4), w(5), w(6), w(7), s(1 downto 0), m(1));
+    Mux3: mux4x1 port map (w(8), w(9), w(10), w(11), s(1 downto 0), m(2));
+    Mux4: mux4x1 port map (w(12), w(13), w(14), w(15), s(1 downto 0), m(3));
+    Mux5: mux4x1 port map (m(0), m(1), m(2), m(3), s(3 downto 2), f);
+
+end structural;

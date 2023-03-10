@@ -9,9 +9,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity mux4x1 is
-    generic(
-        size: natural := 12
-    );
     port(
         A: in std_logic;
         B: in std_logic;

@@ -1,6 +1,6 @@
 -------------------------------------------------------------------
--- Arquivo   : ram_16x4.vhd
--- Projeto   : Experiencia 2 - Um Fluxo de Dados Simples
+-- Arquivo   : ram.vhd
+-- Projeto   : Genius Musical
 -------------------------------------------------------------------
 -- Descricao : módulo de memória RAM sincrona 16x4 
 --             sinais we e ce ativos em baixo
@@ -30,7 +30,7 @@ use ieee.numeric_std.all;
 entity ram is
   generic(
     size: natural := 12
-);
+  );
    port (       
        clk          : in  std_logic;
        endereco     : in  std_logic_vector(3 downto 0);
@@ -72,7 +72,7 @@ begin
 end architecture ram_mif;
 
 -- Dados iniciais (para simulacao com Modelsim) 
-architecture ram_modelsim of ram_16x4 is
+architecture ram_modelsim of ram is
   type   arranjo_memoria is array(0 to 15) of std_logic_vector(size-1 downto 0);
   signal memoria : arranjo_memoria := ( --C_Major ? (AINDA EM DEBATE)
                                         "000000000001", --G5 (783.99 Hz)
