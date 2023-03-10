@@ -20,26 +20,30 @@
 --                                                simulacao com ModelSim 
 --     07/01/2023  2.1.1   Edson Midorikawa       revisao
 --     25/01/2023  2.1.2   João Pedro C. Miranda  novo nome de arquivo .mif
+--     10/03/2023  2.2     Pedro H. Turini        modificações para size=12
 -------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ram_16x4 is
+entity ram is
+  generic(
+    size: natural := 12
+);
    port (       
        clk          : in  std_logic;
        endereco     : in  std_logic_vector(3 downto 0);
-       dado_entrada : in  std_logic_vector(3 downto 0);
+       dado_entrada : in  std_logic_vector(size-1 downto 0);
        we           : in  std_logic;
        ce           : in  std_logic;
-       dado_saida   : out std_logic_vector(3 downto 0)
+       dado_saida   : out std_logic_vector(size-1 downto 0)
     );
-end entity ram_16x4;
+end entity ram;
 
 -- Dados iniciais em arquivo MIF (para sintese com Intel Quartus Prime) 
-architecture ram_mif of ram_16x4 is
-  type   arranjo_memoria is array(0 to 15) of std_logic_vector(3 downto 0);
+architecture ram_mif of ram is
+  type   arranjo_memoria is array(0 to 15) of std_logic_vector(size-1 downto 0);
   signal memoria : arranjo_memoria;
   
   -- Configuracao do Arquivo MIF
@@ -69,24 +73,24 @@ end architecture ram_mif;
 
 -- Dados iniciais (para simulacao com Modelsim) 
 architecture ram_modelsim of ram_16x4 is
-  type   arranjo_memoria is array(0 to 15) of std_logic_vector(3 downto 0);
-  signal memoria : arranjo_memoria := (
-                                        "0001",
-                                        "0010",
-                                        "0100",
-                                        "1000",
-                                        "0100",
-                                        "0010",
-                                        "0001",
-                                        "0001",
-                                        "0010",
-                                        "0010",
-                                        "0100",
-                                        "0100",
-                                        "1000",
-                                        "1000",
-                                        "0001",
-                                        "0100" );
+  type   arranjo_memoria is array(0 to 15) of std_logic_vector(size-1 downto 0);
+  signal memoria : arranjo_memoria := ( --C_Major ? (AINDA EM DEBATE)
+                                        "000000000001", --G5 (783.99 Hz)
+                                        "000000000010", --F5
+                                        "000000000100", --E5
+                                        "000000001000", --D5
+                                        "000000010000", --C5 (523.25 Hz)
+                                        "000000100000", --B5
+                                        "000001000000", --A5
+                                        "000010000000", --G4
+                                        "000100000000", --F4
+                                        "001000000000", --E4
+                                        "010000000000", --D4
+                                        "100000000000", --C4 (261.63 Hz) 
+                                        "010000000000", --D4
+                                        "001000000000", --E4
+                                        "000100000000", --F4
+                                        "000010000000");--G4
   
 begin
 
