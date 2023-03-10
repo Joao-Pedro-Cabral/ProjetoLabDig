@@ -46,6 +46,7 @@ entity unidade_controle is
         perdeu               : out std_logic;
         pronto               : out std_logic;
 		escreve				 : out std_logic;
+        registraSel          : out std_logic;
         db_estado            : out std_logic_vector(3 downto 0)
     );
 end entity;
@@ -68,7 +69,10 @@ begin
     -- logica de proximo estado
     Eprox <=
         inicial                   when  Eatual=inicial and iniciar='0' else
-        inicializa_elementos      when  Eatual=inicial and iniciar='1' else
+        espera_selecao            when  Eatual=inicial and iniciar='1' else
+        espera_selecao            when  Eatual=espera_selecao and jogada='0' else
+        registra_selecao          when  Eatual=espera_selecao and jogada='1' else
+        inicializa_elementos      when  Eatual=registra_selecao else
         inicializa_elementos      when  Eatual=inicializa_elementos and fimI = '0' else
         inicio_rodada             when  Eatual=inicializa_elementos and fimI = '1' else
         espera_jogada             when  Eatual=inicio_rodada else 
@@ -142,7 +146,11 @@ begin
     with Eatual select
         contaI    <=   '1' when inicializa_elementos,
                        '0' when others;
-    
+
+
+    with Eatual select
+        registraSel    <=   '1' when registra_selecao,
+                       '0' when others;
     -- saida de depuracao (db_estado)
     with Eatual select
         db_estado <= "0000" when inicial,              -- 0
@@ -155,6 +163,8 @@ begin
                      "0111" when proxima_rodada,       -- 7
 					 "1000" when espera_nova_jogada,   -- 8
 					 "1001" when escreve_jogada,       -- 9
+                     "1010" when espera_selecao,       -- A
+                     "1011" when registra_selecao,     -- B
                      "1100" when fim_ganhou,           -- C
                      "1101" when fim_perdeu,           -- D
                      "1110" when fim_timeout,          -- E
