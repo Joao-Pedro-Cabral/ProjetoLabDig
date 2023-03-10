@@ -23,9 +23,9 @@ entity comparador is
         B       : in  std_logic_vector(N-1 downto 0);
         igual   : out std_logic
     );
-end entity comparador_85;
+end entity comparador;
 
-architecture dataflow of comparador_85 is
+architecture dataflow of comparador is
     signal xor_vector  : std_logic_vector(N-1 downto 0);
     signal or_vector   : std_logic_vector(N-1 downto 0);
 begin

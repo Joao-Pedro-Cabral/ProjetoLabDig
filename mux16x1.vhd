@@ -9,7 +9,7 @@ entity mux16x1 is
     );
 end mux16x1;
 
-architecture structural of mux16to1 is
+architecture structural of mux16x1 is
 component mux4x1 is
     port(
         A: in std_logic;

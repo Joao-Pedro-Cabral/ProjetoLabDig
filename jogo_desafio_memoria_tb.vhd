@@ -1,10 +1,10 @@
 --------------------------------------------------------------------------
--- Arquivo   : jogo_desafio_memoria_tb2.vhd
+-- Arquivo   : jogo_desafio_memoria_tb.vhd
 -- Projeto   : Experiencia 06 - Projeto Base do Jogo do Desafio da Memória
 --------------------------------------------------------------------------
 -- Descricao : testbench para simulação com ModelSim
 --
---             Cenário: Jogador erra na 2ª jogada da 2ª rodada
+--             Cenário: Jogador vence
 --             
 --------------------------------------------------------------------------
 -- Revisoes  :
@@ -18,10 +18,10 @@ use ieee.numeric_std.all;
 use std.textio.all;
 
 -- entidade do testbench
-entity jogo_desafio_memoria_tb2 is
+entity jogo_desafio_memoria_tb is
 end entity;
 
-architecture tb of jogo_desafio_memoria_tb2 is
+architecture tb of jogo_desafio_memoria_tb is
 
   -- Componente a ser testado (Device Under Test -- DUT)
   component jogo_desafio_memoria is
@@ -48,13 +48,13 @@ architecture tb of jogo_desafio_memoria_tb2 is
   signal clk_in     : std_logic := '0';
   signal rst_in     : std_logic := '0';
   signal iniciar_in : std_logic := '0';
-  signal seleciona_in  : std_logic;
   signal botoes_in  : std_logic_vector(11 downto 0) := "000000000000";
 
   ---- Declaracao dos sinais de saida
   signal ganhou_out     : std_logic := '0';
   signal perdeu_out     : std_logic := '0';
   signal pronto_out     : std_logic := '0';
+  signal seleciona_in  : std_logic;
   signal leds_out       : std_logic_vector(11 downto 0);
   signal clock_out      : std_logic := '0';
   signal contagem_out   : std_logic_vector(6 downto 0) := "0000000";
@@ -66,26 +66,29 @@ architecture tb of jogo_desafio_memoria_tb2 is
   signal keep_simulating: std_logic := '0'; -- delimita o tempo de geração do clock
   constant clockPeriod : time := 20 ns;     -- frequencia 100MHz
 
+  -- Configuração de jogo
+  constant rodada : natural := 5;
+
   -- Array de testes
   type   test_vector is array(0 to 15) of std_logic_vector(11 downto 0);
   signal tests : test_vector := (
-                                  --C_Major ? (AINDA EM DEBATE)
-                                  "000000000001", --G5 (783.99 Hz)
-                                  "000000000010", --F5
-                                  "000000000100", --E5
-                                  "000000001000", --D5
-                                  "000000010000", --C5 (523.25 Hz)
-                                  "000000100000", --B5
-                                  "000001000000", --A5
-                                  "000010000000", --G4
-                                  "000100000000", --F4
-                                  "001000000000", --E4
-                                  "010000000000", --D4
-                                  "100000000000", --C4 (261.63 Hz) 
-                                  "010000000000", --D4
-                                  "001000000000", --E4
-                                  "000100000000", --F4
-                                  "000010000000" );
+                                   --C_Major ? (AINDA EM DEBATE)
+                                   "000000000001", --G5 (783.99 Hz)
+                                   "000000000010", --F5
+                                   "000000000100", --E5
+                                   "000000001000", --D5
+                                   "000000010000", --C5 (523.25 Hz)
+                                   "000000100000", --B5
+                                   "000001000000", --A5
+                                   "000010000000", --G4
+                                   "000100000000", --F4
+                                   "001000000000", --E4
+                                   "010000000000", --D4
+                                   "100000000000", --C4 (261.63 Hz) 
+                                   "010000000000", --D4
+                                   "001000000000", --E4
+                                   "000100000000", --F4
+                                   "000010000000");
   
 begin
   -- Gerador de clock: executa enquanto 'keep_simulating = 1', com o período especificado. 
@@ -107,7 +110,7 @@ begin
           seleciona   => seleciona_in,
           db_contagem     => contagem_out,
           db_memoria      => memoria_out,
-          db_estado       => estado_out, 
+          db_estado       => estado_out,
           db_clock        => clock_out,
           db_rodada       => db_rodada
        );
@@ -139,7 +142,7 @@ begin
     iniciar_in <= '0';
     wait for 10*clockPeriod;
     seleciona_in          <= '1';
-    botoes_in(3 downto 0) <= "0000";
+    botoes_in(3 downto 0) <= "0100";
     wait for 2*clockPeriod;
     seleciona_in <= '0'; 
     botoes_in           <= "000000000000";
@@ -151,28 +154,37 @@ begin
     wait for 1000*clockPeriod;
     
     -- Cada iteração corresponde a uma rodada
-    for i in 0 to 1 loop
+    for i in 0 to rodada - 1 loop
       assert false report "Rodada " & integer'image(i) severity note;
       -- Cada iteração corresponde a uma jogada
-      -- Escrita pós-jogada
-      for k in 0 to i + 1 loop
-        -- Perder na 2ª jogada da 2ª rodada
-        if(k = 1 and i = 1) then
-          botoes_in  <= "000000000001";
+      -- Última rodada -> sem escrita
+      if(i = rodada - 1) then
+        for k in 0 to i loop 
+          botoes_in  <= tests(k);
           wait for clockPeriod;
-          assert leds_out     = "000000000001"   report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
-          assert pronto_out   = '0'      report "bad  pronto"                             severity error;
-          assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
-          assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
-          wait for 9*clockPeriod;
-          botoes_in  <= "000000000000";
-          wait for clockPeriod;
-          assert leds_out     = "000000000000"   report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
-          assert pronto_out   = '1'      report "bad  pronto"                             severity error;
-          assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
-          assert perdeu_out   = '1'      report "bad  perdeu"                             severity error;
-          wait for 9*clockPeriod;
-        elsif(i = 0 or k < 1) then
+          assert leds_out = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
+          -- última jogada da última rodada -> ganhou!
+            assert pronto_out   = '0'  report "bad pronto"                          severity error;
+            assert ganhou_out   = '0'  report "bad ganhou"                          severity error;
+            assert perdeu_out   = '0'  report "bad perdeu"                          severity error;
+            wait for 9*clockPeriod;
+            botoes_in  <= "000000000000";
+            wait for clockPeriod;
+            assert leds_out     = "000000000000"   report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
+            if(k = rodada - 1) then
+              assert pronto_out   = '1'  report "bad pronto"  severity error;
+              assert ganhou_out   = '1'  report "bad ganhou"  severity error;
+              assert perdeu_out   = '0'  report "bad perdeu"  severity error;
+            else
+              assert pronto_out   = '0' report "bad pronto"   severity error;
+              assert ganhou_out   = '0' report "bad ganhou"   severity error;
+              assert perdeu_out   = '0' report "bad perdeu"   severity error;
+            end if;
+            wait for 9*clockPeriod;
+        end loop;
+      -- Demais rodadas -> escrita pós-jogada
+      else
+        for k in 0 to i + 1 loop 
           botoes_in  <= tests(k);
           wait for clockPeriod;
           assert leds_out     = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
@@ -187,8 +199,8 @@ begin
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
           wait for 9*clockPeriod;
-        end if; 
-      end loop;
+        end loop;
+      end if;
     end loop;
 
     ---- final do testbench
@@ -197,6 +209,5 @@ begin
     
     wait; -- fim da simulação: processo aguarda indefinidamente
   end process;
-
 
 end architecture;

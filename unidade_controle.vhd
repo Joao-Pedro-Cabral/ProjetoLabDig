@@ -31,6 +31,7 @@ entity unidade_controle is
         fimL                 : in  std_logic;
         fimI                 : in  std_logic;
         jogada               : in  std_logic;
+        seleciona            : in  std_logic;
         enderecoIgualRodada  : in  std_logic;
         jogada_correta       : in  std_logic;
         timeout              : in  std_logic;
@@ -52,7 +53,7 @@ entity unidade_controle is
 end entity;
 
 architecture fsm of unidade_controle is
-    type t_estado is (inicial, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, espera_nova_jogada);
+    type t_estado is (inicial, espera_selecao, registra_selecao, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, espera_nova_jogada);
     signal Eatual, Eprox: t_estado;
 begin
 
@@ -70,8 +71,8 @@ begin
     Eprox <=
         inicial                   when  Eatual=inicial and iniciar='0' else
         espera_selecao            when  Eatual=inicial and iniciar='1' else
-        espera_selecao            when  Eatual=espera_selecao and jogada='0' else
-        registra_selecao          when  Eatual=espera_selecao and jogada='1' else
+        espera_selecao            when  Eatual=espera_selecao and seleciona='0' else
+        registra_selecao          when  Eatual=espera_selecao and seleciona='1' else
         inicializa_elementos      when  Eatual=registra_selecao else
         inicializa_elementos      when  Eatual=inicializa_elementos and fimI = '0' else
         inicio_rodada             when  Eatual=inicializa_elementos and fimI = '1' else
@@ -91,11 +92,11 @@ begin
 		proxima_rodada			  when  Eatual=escreve_jogada else
         inicio_rodada             when  Eatual=proxima_rodada else
         fim_perdeu                when  Eatual=fim_perdeu and iniciar='0' else
-        inicializa_elementos      when  Eatual=fim_perdeu and iniciar='1' else
+        espera_selecao            when  Eatual=fim_perdeu and iniciar='1' else
         fim_ganhou                when  Eatual=fim_ganhou and iniciar='0' else
-        inicializa_elementos      when  Eatual=fim_ganhou and iniciar='1' else
+        espera_selecao            when  Eatual=fim_ganhou and iniciar='1' else
         fim_timeout               when  Eatual=fim_timeout and iniciar='0' else
-        inicializa_elementos      when  Eatual=fim_timeout and iniciar='1' else
+        espera_selecao            when  Eatual=fim_timeout and iniciar='1' else
         inicial; 
 
     -- logica de saída (maquina de Moore)
@@ -151,7 +152,7 @@ begin
     with Eatual select
         registraSel    <=   '1' when registra_selecao,
                             '0' when others;
-                            
+
     -- saida de depuracao (db_estado)
     with Eatual select
         db_estado <= "0000" when inicial,              -- 0

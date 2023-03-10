@@ -68,10 +68,10 @@ end entity;
 architecture estrutural of fluxo_dados is
 
   signal s_rodada        : std_logic_vector(3 downto 0);
+  signal seletor_rodada  : std_logic_vector(3 downto 0);
   signal s_endereco      : std_logic_vector(3 downto 0);
   signal s_jogada        : std_logic_vector(11 downto 0);
   signal s_fimL          : std_logic_vector(15 downto 0);
-  signal s_rodada        : std_logic_vector(3 downto 0);
   signal s_dado          : std_logic_vector(11 downto 0);
   signal s_not_zeraCR    : std_logic;
   signal s_not_zeraE     : std_logic;
@@ -161,7 +161,7 @@ component mux16x1 is
         s : in std_logic_vector(3 downto 0);
         f : out std_logic
     );
-end mux16x1;
+end component mux16x1;
 
 begin
 
@@ -196,7 +196,7 @@ begin
     );
 
   comparador_jogada: comparador
-    generic(
+    generic map(
       N => 12
     )
     port map (
@@ -206,7 +206,7 @@ begin
     );
 
   comparador_endereco: comparador
-    generic(
+    generic map(
       N => 4
     )
     port map (
@@ -217,7 +217,7 @@ begin
 
   --memoria: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
   memoria: entity work.ram (ram_modelsim) -- usar arquitetura para ModelSim
-    generic(
+    generic map(
       size => 12
     )
     port map (
@@ -286,7 +286,7 @@ begin
       clear  => limpaRC,
       enable => registraSel,
       D      => chaves(3 downto 0),
-      Q      => seletor_rodada,
+      Q      => seletor_rodada
     );
    
   multiplexador_rodada: mux16x1
