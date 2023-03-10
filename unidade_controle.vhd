@@ -150,7 +150,8 @@ begin
 
     with Eatual select
         registraSel    <=   '1' when registra_selecao,
-                       '0' when others;
+                            '0' when others;
+                            
     -- saida de depuracao (db_estado)
     with Eatual select
         db_estado <= "0000" when inicial,              -- 0

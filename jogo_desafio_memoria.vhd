@@ -55,7 +55,7 @@ architecture inicial of jogo_desafio_memoria is
               chaves                   : in  std_logic_vector(3 downto 0);
               registraRC               : in  std_logic;
               limpaRC                  : in  std_logic;
-    
+              registraSel              : in  std_logic;
               zeraT                    : in  std_logic;
               contaT                   : in  std_logic;
               
@@ -94,6 +94,7 @@ architecture inicial of jogo_desafio_memoria is
             zeraE                : out std_logic;
             zeraT                : out std_logic;
             registraRC           : out std_logic;
+            registraSel          : out std_logic;
             ganhou               : out std_logic;
             perdeu               : out std_logic;
             pronto               : out std_logic;
@@ -110,7 +111,7 @@ component hexa7seg is
 end component;
 
 signal  db_jogada_feita_s, db_estado_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(3 downto 0);
-signal fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 
 begin
 
@@ -132,6 +133,7 @@ port map(
         zeraT            => zeraT,
         contaI              => contaI,
         registraRC           =>registraRC,
+        registraSel         => registraSel,
         ganhou       => ganhou,       
         perdeu       => perdeu,      
         pronto      => pronto,
@@ -160,6 +162,7 @@ port map(
     db_contagem             => db_contagem_s,     
     db_memoria             => db_memoria_s,      
     jogada_correta         =>jogada_correta, 
+    registraSel         => registraSel,
     jogada => jogada,    
     db_jogada_feita       => db_jogada_feita_s,       
     fimL                   => fimL,    

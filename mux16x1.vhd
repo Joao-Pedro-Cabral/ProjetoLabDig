@@ -24,6 +24,7 @@ end component mux4x1;
 signal m : std_logic_vector(3 downto 0);
 
 begin
+    
     Mux1: mux4x1 port map (w(0), w(1), w(2), w(3), s(1 downto 0), m(0));
     Mux2: mux4x1 port map (w(4), w(5), w(6), w(7), s(1 downto 0), m(1));
     Mux3: mux4x1 port map (w(8), w(9), w(10), w(11), s(1 downto 0), m(2));

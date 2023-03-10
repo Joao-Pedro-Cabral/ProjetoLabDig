@@ -297,7 +297,7 @@ begin
     );
 
   -- Determinação dos possíveis fimL
-  s_fimL(0)  <= '0'; -- Inatingível 
+  s_fimL(0)  <= s_rodada(0); -- Inatingível 
   s_fimL(1)  <= s_rodada(0);
   s_fimL(2)  <= s_rodada(1);
   s_fimL(3)  <= s_rodada(1) and s_rodada(0);
