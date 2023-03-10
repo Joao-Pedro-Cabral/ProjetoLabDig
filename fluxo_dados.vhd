@@ -19,6 +19,7 @@
 --     06/02/2023  1.5     João Pedro C.M.    versão desafio exp4
 --     08/02/2023  1.6     João Pedro C.M.    exp5
 --     08/02/2023  1.7     João Pedro C.M.    exp6
+--     10/03/2023  1.8     Pedro H. Turini    implementação projeto (12 botões)
 --------------------------------------------------------------------
 --
 library ieee;
@@ -38,7 +39,7 @@ entity fluxo_dados is
           escreve                  : in  std_logic;
 
 
-          chaves                   : in  std_logic_vector(3 downto 0);
+          chaves                   : in  std_logic_vector(11 downto 0);
           registraRC               : in  std_logic;
           limpaRC                  : in  std_logic;
 
@@ -50,10 +51,10 @@ entity fluxo_dados is
           db_rodada                : out std_logic_vector(3 downto 0);
           enderecoIgualRodada      : out std_logic;
           db_contagem              : out std_logic_vector(3 downto 0);
-          db_memoria               : out std_logic_vector(3 downto 0);
+          db_memoria               : out std_logic_vector(11 downto 0);
           jogada_correta           : out std_logic;
           jogada                   : out std_logic;
-          db_jogada_feita          : out std_logic_vector(3 downto 0);
+          db_jogada_feita          : out std_logic_vector(11 downto 0);
 
           fimL                     : out std_logic;
           fimE                     : out std_logic;
@@ -68,9 +69,9 @@ architecture estrutural of fluxo_dados is
 
   signal s_rodada        : std_logic_vector(3 downto 0);
   signal s_endereco      : std_logic_vector(3 downto 0);
-  signal s_jogada        : std_logic_vector(3 downto 0);
+  signal s_jogada        : std_logic_vector(11 downto 0);
 
-  signal s_dado          : std_logic_vector(3 downto 0);
+  signal s_dado          : std_logic_vector(11 downto 0);
   signal s_not_zeraCR    : std_logic;
   signal s_not_zeraE     : std_logic;
   signal s_not_escreve   : std_logic;
@@ -85,8 +86,8 @@ architecture estrutural of fluxo_dados is
         ld    : in  std_logic;
         ent   : in  std_logic;
         enp   : in  std_logic;
-        D     : in  std_logic_vector (3 downto 0);
-        Q     : out std_logic_vector (3 downto 0);
+        D     : in  std_logic_vector (11 downto 0);
+        Q     : out std_logic_vector (11 downto 0);
         rco   : out std_logic 
     );
   end component;
@@ -114,16 +115,16 @@ architecture estrutural of fluxo_dados is
     port (
        clk          : in  std_logic;
        endereco     : in  std_logic_vector(3 downto 0);
-       dado_entrada : in  std_logic_vector(3 downto 0);
+       dado_entrada : in  std_logic_vector(11 downto 0);
        we           : in  std_logic;
        ce           : in  std_logic;
-       dado_saida   : out std_logic_vector(3 downto 0)
+       dado_saida   : out std_logic_vector(11 downto 0)
     );
   end component;
   
   component registrador_n is
     generic (
-        constant N: integer := 8 
+        constant N: integer := 12 
     );
     port (
         clock  : in  std_logic;
@@ -239,7 +240,7 @@ begin
 	
 	registrador: registrador_n 
     generic map(
-      N => 4
+      N => 12
     )
     port map (
         clock => clock,
@@ -286,7 +287,7 @@ begin
       );
    
   reset_ed        <= limpaRC;
-  s_chaveacionada <= chaves(0) or chaves(1) or chaves(2) or chaves(3);
+  s_chaveacionada <= chaves(0) or chaves(1) or chaves(2) or chaves(3) or chaves(4) or chaves(5) or chaves (6) or chaves(7) or chaves(8) or chaves(9) or chaves(10) or chaves(11);
   db_rodada       <= s_rodada;
   db_contagem     <= s_endereco;
   db_memoria      <= s_dado;
