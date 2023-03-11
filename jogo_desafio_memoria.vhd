@@ -28,10 +28,9 @@ entity jogo_desafio_memoria is
         ganhou    : out std_logic;
         perdeu    : out std_logic;
         -- acrescentar saidas de depuracao
-        db_clock                 : out std_logic;
         db_rodada                : out std_logic_vector(6 downto 0);
         db_contagem              : out std_logic_vector(6 downto 0);
-        db_memoria               : out std_logic_vector(20 downto 0);
+        db_memoria               : out std_logic_vector(11 downto 0);
         db_estado                : out std_logic_vector(6 downto 0)
     );
    end entity;
@@ -172,43 +171,25 @@ port map(
     fimI     => fimI
 );
 
-leds <= db_memoria_s when (db_estado_s="0001" and db_rodada_s="0000")  else botoes;
+leds       <= db_memoria_s when (db_estado_s="0001" and db_rodada_s="0000")  else botoes;
+db_memoria <= db_memoria_s;
 
-hex0: hexa7seg
+hex3: hexa7seg
     port map(
         hexa => db_contagem_s,
         sseg => db_contagem
     );
 
-hex3: hexa7seg
+hex4: hexa7seg
     port map(
         hexa => db_rodada_s,
         sseg => db_rodada
     );
 
-hex4: hexa7seg
-    port map(
-        hexa => db_memoria_s(3 downto 0),
-        sseg => db_memoria(6 downto 0)
-    );
-
 hex5: hexa7seg
-    port map(
-        hexa => db_memoria_s(7 downto 4),
-        sseg => db_memoria(13 downto 7)
-    );
-
-hex6: hexa7seg
-    port map(
-        hexa => db_memoria_s(11 downto 8),
-        sseg => db_memoria(20 downto 14)
-    );
-
-hex7: hexa7seg
     port map(
         hexa => db_estado_s,
         sseg => db_estado
     );
 
-db_clock <= clock;
 end architecture;

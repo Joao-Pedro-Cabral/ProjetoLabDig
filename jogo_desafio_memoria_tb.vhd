@@ -36,10 +36,9 @@ architecture tb of jogo_desafio_memoria_tb is
       ganhou    : out std_logic;
       perdeu    : out std_logic;
         -- acrescentar saidas de depuracao
-        db_clock                 : out std_logic;
         db_rodada                : out std_logic_vector(6 downto 0);
         db_contagem              : out std_logic_vector(6 downto 0);
-        db_memoria               : out std_logic_vector(20 downto 0);
+        db_memoria               : out std_logic_vector(11 downto 0);
         db_estado                : out std_logic_vector(6 downto 0)
     );
   end component;
@@ -56,9 +55,8 @@ architecture tb of jogo_desafio_memoria_tb is
   signal pronto_out     : std_logic := '0';
   signal seleciona_in  : std_logic;
   signal leds_out       : std_logic_vector(11 downto 0);
-  signal clock_out      : std_logic := '0';
   signal contagem_out   : std_logic_vector(6 downto 0) := "0000000";
-  signal memoria_out    : std_logic_vector(20 downto 0);
+  signal memoria_out    : std_logic_vector(11 downto 0);
   signal estado_out     : std_logic_vector(6 downto 0) := "0000000";
   signal db_rodada      : std_logic_vector(6 downto 0);
 
@@ -67,7 +65,8 @@ architecture tb of jogo_desafio_memoria_tb is
   constant clockPeriod : time := 20 ns;     -- frequencia 100MHz
 
   -- Configuração de jogo
-  constant rodada : natural := 5;
+  -- constant rodada : natural := 16; -- Cenário 1
+  constant rodada : natural := 5; -- Cenário 4
 
   -- Array de testes
   type   test_vector is array(0 to 15) of std_logic_vector(11 downto 0);
@@ -107,11 +106,9 @@ begin
           perdeu          => perdeu_out,
           pronto          => pronto_out,
           leds            => leds_out,
-          seleciona   => seleciona_in,
+          seleciona       => seleciona_in,
           db_contagem     => contagem_out,
-          db_memoria      => memoria_out,
           db_estado       => estado_out,
-          db_clock        => clock_out,
           db_rodada       => db_rodada
        );
  
@@ -142,7 +139,8 @@ begin
     iniciar_in <= '0';
     wait for 10*clockPeriod;
     seleciona_in          <= '1';
-    botoes_in(3 downto 0) <= "0100";
+    -- botoes_in(3 downto 0) <= "1111"; -- Cenário 1
+    botoes_in(3 downto 0) <= "0100"; -- Cenário 4
     wait for 2*clockPeriod;
     seleciona_in <= '0'; 
     botoes_in           <= "000000000000";

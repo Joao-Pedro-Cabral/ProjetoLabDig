@@ -36,10 +36,9 @@ architecture tb of jogo_desafio_memoria_tb3 is
       ganhou    : out std_logic;
       perdeu    : out std_logic;
         -- acrescentar saidas de depuracao
-        db_clock                 : out std_logic;
         db_rodada                : out std_logic_vector(6 downto 0);
         db_contagem              : out std_logic_vector(6 downto 0);
-        db_memoria               : out std_logic_vector(20 downto 0);
+        db_memoria               : out std_logic_vector(11 downto 0);
         db_estado                : out std_logic_vector(6 downto 0)
     );
   end component;
@@ -55,10 +54,10 @@ architecture tb of jogo_desafio_memoria_tb3 is
   signal perdeu_out     : std_logic := '0';
   signal pronto_out     : std_logic := '0';
   signal leds_out       : std_logic_vector(11 downto 0);
-  signal seleciona_in  : std_logic;
+  signal seleciona_in   : std_logic;
   signal clock_out      : std_logic := '0';
   signal contagem_out   : std_logic_vector(6 downto 0) := "0000000";
-  signal memoria_out    : std_logic_vector(20 downto 0);
+  signal memoria_out    : std_logic_vector(11 downto 0);
   signal estado_out     : std_logic_vector(6 downto 0) := "0000000";
   signal db_rodada      : std_logic_vector(6 downto 0);
 
@@ -104,11 +103,10 @@ begin
           perdeu          => perdeu_out,
           pronto          => pronto_out,
           leds            => leds_out,
-          seleciona   => seleciona_in,
+          seleciona       => seleciona_in,
           db_contagem     => contagem_out,
           db_memoria      => memoria_out,
           db_estado       => estado_out,
-          db_clock        => clock_out,
           db_rodada       => db_rodada
        );
 
