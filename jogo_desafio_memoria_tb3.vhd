@@ -35,11 +35,11 @@ architecture tb of jogo_desafio_memoria_tb3 is
       pronto    : out std_logic;
       ganhou    : out std_logic;
       perdeu    : out std_logic;
-        -- acrescentar saidas de depuracao
-        db_rodada                : out std_logic_vector(6 downto 0);
-        db_contagem              : out std_logic_vector(6 downto 0);
-        db_memoria               : out std_logic_vector(11 downto 0);
-        db_estado                : out std_logic_vector(6 downto 0)
+      -- acrescentar saidas de depuracao
+      db_rodada                : out std_logic_vector(6 downto 0);
+      db_contagem              : out std_logic_vector(6 downto 0);
+      db_memoria               : out std_logic_vector(11 downto 0);
+      db_estado                : out std_logic_vector(6 downto 0)
     );
   end component;
   
