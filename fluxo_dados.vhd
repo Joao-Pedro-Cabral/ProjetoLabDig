@@ -50,6 +50,7 @@ entity fluxo_dados is
           enderecoIgualRodada      : out std_logic;
           db_contagem              : out std_logic_vector(3 downto 0);
           db_memoria               : out std_logic_vector(3 downto 0);
+          modo                     : out std_logic;
           jogada_correta           : out std_logic;
           jogada                   : out std_logic;
           fimL                     : out std_logic;
@@ -383,5 +384,6 @@ begin
   db_contagem     <= s_endereco;
   db_memoria      <= s_dado;
   jogada          <= pulso_out;
+  modo            <= seletor_modo(1);
   
 end architecture estrutural;

@@ -107,7 +107,7 @@ component hexa7seg is
 end component;
 
 signal  db_jogada_s, db_estado_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(3 downto 0);
-signal  escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  modo, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 signal  registraModo : std_logic_vector(1 downto 0);
 
 begin
@@ -148,7 +148,8 @@ port map(
     zeraCR         => zeraCR,             
     contaE           => contaE,           
     zeraE            => zeraE,           
-    escreve           => escreve,         
+    escreve           => escreve, 
+    ativar    => ativar,
     chaves          => botoes,             
     registraRC        => registraRC,         
     limpaRC          => limpaRC, 
@@ -162,6 +163,7 @@ port map(
     db_jogada              => db_jogada_s,     
     jogada_correta         =>jogada_correta, 
     registraModo        => registraModo,
+    modo                => modo,
     escreve_aleatorio   => escreve_aleatorio,
     registraSel         => registraSel,
     jogada              => jogada,          
