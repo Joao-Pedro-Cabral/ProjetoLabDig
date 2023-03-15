@@ -21,16 +21,17 @@ entity jogo_desafio_memoria is
         clock     : in  std_logic;
         reset     : in  std_logic;
         iniciar   : in  std_logic;
-        seleciona : in  std_logic;
-        botoes    : in  std_logic_vector(11 downto 0);
-        leds      : out std_logic_vector(11 downto 0); --saida 
+        ativar    : in  std_logic;
+        botoes    : in  std_logic_vector(3 downto 0);
+        leds      : out std_logic_vector(3 downto 0); --saida 
         pronto    : out std_logic;
         ganhou    : out std_logic;
         perdeu    : out std_logic;
         -- acrescentar saidas de depuracao
+        db_jogada                : out std_logic_vector(6 downto 0);
         db_rodada                : out std_logic_vector(6 downto 0);
         db_contagem              : out std_logic_vector(6 downto 0);
-        db_memoria               : out std_logic_vector(11 downto 0);
+        db_memoria               : out std_logic_vector(6 downto 0);
         db_estado                : out std_logic_vector(6 downto 0)
     );
    end entity;
@@ -40,32 +41,28 @@ architecture inicial of jogo_desafio_memoria is
     component fluxo_dados is
         port (
               clock                    : in  std_logic;
-    
               contaCR                  : in  std_logic;
               zeraCR                   : in  std_logic;
-    
               contaE                   : in  std_logic;
               zeraE                    : in  std_logic;
               contaI                   : in  std_logic;
-    
               escreve                  : in  std_logic;
-    
-    
-              chaves                   : in  std_logic_vector(11 downto 0);
+              ativar                   : in  std_logic;
+              chaves                   : in  std_logic_vector(3 downto 0);
               registraRC               : in  std_logic;
               limpaRC                  : in  std_logic;
+              registraModo             : in  std_logic;
               registraSel              : in  std_logic;
+              escreve_aleatorio        : in  std_logic;
               zeraT                    : in  std_logic;
               contaT                   : in  std_logic;
-              
         --Saidas
               db_rodada                : out std_logic_vector(3 downto 0);
               enderecoIgualRodada      : out std_logic;
               db_contagem              : out std_logic_vector(3 downto 0);
-              db_memoria               : out std_logic_vector(11 downto 0);
+              db_memoria               : out std_logic_vector(3 downto 0);
               jogada_correta           : out std_logic;
               jogada                   : out std_logic;
-    
               fimL                     : out std_logic;
               fimE                     : out std_logic;
               fimT                     : out std_logic;
@@ -109,9 +106,9 @@ component hexa7seg is
     );
 end component;
 
-signal  db_estado_s, db_rodada_s, db_contagem_s : std_logic_vector(3 downto 0);
-signal  registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
-signal  db_memoria_s: std_logic_vector(11 downto 0);
+signal  db_jogada_s, db_estado_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(3 downto 0);
+signal  escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  registraModo : std_logic_vector(1 downto 0);
 
 begin
 
@@ -161,18 +158,27 @@ port map(
     db_rodada               => db_rodada_s ,     
     enderecoIgualRodada      => enderecoIgualRodada,    
     db_contagem             => db_contagem_s,     
-    db_memoria             => db_memoria_s,      
+    db_memoria             => db_memoria_s, 
+    db_jogada              => db_jogada_s,     
     jogada_correta         =>jogada_correta, 
+    registraModo        => registraModo,
+    escreve_aleatorio   => escreve_aleatorio,
     registraSel         => registraSel,
-    jogada => jogada,          
+    jogada              => jogada,          
     fimL                   => fimL,    
     fimE       => open,                  
     fimT     => fimT,
     fimI     => fimI
 );
 
-leds       <= db_memoria_s when (db_estado_s="0001" and db_rodada_s="0000")  else botoes;
+leds       <= db_jogada_s when (db_estado_s="0001" and db_rodada_s="0000")  else botoes;
 db_memoria <= db_memoria_s;
+
+hex0: hexa7seg
+    port map(
+        hexa => db_jogada_s,
+        sseg => db_jogada
+    );
 
 hex3: hexa7seg
     port map(

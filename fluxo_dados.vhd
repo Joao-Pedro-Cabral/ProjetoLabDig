@@ -29,39 +29,33 @@ use ieee.math_real.all;
 entity fluxo_dados is
     port (
           clock                    : in  std_logic;
-
           contaCR                  : in  std_logic;
           zeraCR                   : in  std_logic;
-
           contaE                   : in  std_logic;
           zeraE                    : in  std_logic;
-
           escreve                  : in  std_logic;
-
-
-          chaves                   : in  std_logic_vector(11 downto 0);
+          ativar                   : in  std_logic;
+          chaves                   : in  std_logic_vector(3 downto 0);
           registraRC               : in  std_logic;
           limpaRC                  : in  std_logic;
+          registraModo             : in  std_logic;
           registraSel              : in  std_logic;
-
+          escreve_aleatorio        : in  std_logic;
           zeraT                    : in  std_logic;
           contaT                   : in  std_logic;
           contaI                   : in  std_logic;
-          
 --Saidas
           db_rodada                : out std_logic_vector(3 downto 0);
+          db_jogada                : out std_logic_vector(3 downto 0);
           enderecoIgualRodada      : out std_logic;
           db_contagem              : out std_logic_vector(3 downto 0);
-          db_memoria               : out std_logic_vector(11 downto 0);
+          db_memoria               : out std_logic_vector(3 downto 0);
           jogada_correta           : out std_logic;
           jogada                   : out std_logic;
-
           fimL                     : out std_logic;
           fimE                     : out std_logic;
           fimT                     : out std_logic;
           fimI                     : out std_logic
-          
-          
     );
 end entity;
 
@@ -69,15 +63,21 @@ architecture estrutural of fluxo_dados is
 
   signal s_rodada        : std_logic_vector(3 downto 0);
   signal seletor_rodada  : std_logic_vector(3 downto 0);
+  signal seletor_modo    : std_logic_vector(1 downto 0);
   signal s_endereco      : std_logic_vector(3 downto 0);
-  signal s_jogada        : std_logic_vector(11 downto 0);
+  signal s_jogada        : std_logic_vector(3 downto 0);
+  signal s_escrita       : std_logic_vector(3 downto 0);
+  signal s_aleatorio     : std_logic_vector(3 downto 0);
   signal s_fimL          : std_logic_vector(15 downto 0);
-  signal s_dado          : std_logic_vector(11 downto 0);
+  signal s_dado          : std_logic_vector(3 downto 0);
+  signal s_dado_multi    : std_logic_vector(3 downto 0);
+  signal s_dado_treino_2 : std_logic_vector(3 downto 0);
+  signal s_dado_treino_1 : std_logic_vector(3 downto 0);
+  signal s_dado_treino   : std_logic_vector(3 downto 0);
   signal s_not_zeraCR    : std_logic;
   signal s_not_zeraE     : std_logic;
   signal s_not_escreve   : std_logic;
   signal pulso_out       : std_logic;
-  signal s_chaveacionada : std_logic;
   signal reset_ed        : std_logic;
   
   component contador_163
@@ -106,15 +106,15 @@ architecture estrutural of fluxo_dados is
 
   component ram_16x4 is
     generic(
-      size: natural := 12
+      init_file     : string  := "rom.dat"
     );
      port (       
          clk          : in  std_logic;
          endereco     : in  std_logic_vector(3 downto 0);
-         dado_entrada : in  std_logic_vector(size-1 downto 0);
+         dado_entrada : in  std_logic_vector(3 downto 0);
          we           : in  std_logic;
          ce           : in  std_logic;
-         dado_saida   : out std_logic_vector(size-1 downto 0)
+         dado_saida   : out std_logic_vector(3 downto 0)
       );
   end component;
   
@@ -163,6 +163,14 @@ component mux16x1 is
     );
 end component mux16x1;
 
+component LSFR_viciado is
+  port(
+      clock           : in  std_logic;
+      reset           : in  std_logic;
+      pseudo_random   : out std_logic(3 downto 0) -- Número pseudo-aleatório
+  );
+end component;
+
 begin
 
   -- sinais de controle ativos em alto
@@ -197,7 +205,7 @@ begin
 
   comparador_jogada: comparador
     generic map(
-      N => 12
+      N => 4
     )
     port map (
       A     => s_dado,
@@ -215,23 +223,66 @@ begin
       igual => enderecoIgualRodada
     );
 
+  gerador_pseudo_aleatorio: LSFR_viciado is
+      port map(
+          clock           => clock,
+          reset           => limpaRC,
+          pseudo_random   => s_aleatorio
+      );
+  
   --memoria: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
-  memoria: entity work.ram (ram_modelsim) -- usar arquitetura para ModelSim
-    generic map(
-      size => 12
-    )
+  memoria_multijogador: entity work.ram (ram_multijogador) -- usar arquitetura para ModelSim
+    -- generic map(
+      -- init_file => "ram_treino_1.mif" -- Quartus
+    -- )
     port map (
        clk          => clock,
        endereco     => s_endereco,
-       dado_entrada => s_jogada,
+       dado_entrada => s_escrita,
        we           => s_not_escreve, -- we ativo em baixo
        ce           => '0',
-       dado_saida   => s_dado
+       dado_saida   => s_dado_multi
     );
-	
-	registrador: registrador_n 
+
+    s_escrita <= s_aleatorio when (seletor_modo(0) or escreve_aleatorio) = '1' else s_jogada;
+
+  --memoria_treino_1: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
+  memoria_treino_1: entity work.ram (ram_treino_1) -- usar arquitetura para ModelSim
+    -- generic map(
+      -- init_file => "ram_treino_1.mif" -- Quartus
+    -- )
+    port map (
+       clk          => clock,
+       endereco     => s_endereco,
+       dado_entrada => "0000", -- ROM
+       we           => '0',    -- ROM
+       ce           => '0',
+       dado_saida   => s_dado_treino_1
+    );
+  
+  --memoria_treino_2: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
+  memoria_treino_2: entity work.ram (ram_treino_2) -- usar arquitetura para ModelSim
+    -- generic map(
+      -- init_file => "ram_treino_2.mif" -- Quartus
+    -- )
+    port map (
+       clk          => clock,
+       endereco     => s_endereco,
+       dado_entrada => "0000", -- ROM
+       we           => '0',    -- ROM
+       ce           => '0',
+       dado_saida   => s_dado_treino_2
+    );
+
+  -- Seleção da memória de treino
+  s_dado_treino <= s_dado_treino_2 when seletor_modo(0) = '1' else s_dado_treino_1; 
+
+  -- Seleção do s_dado
+  s_dado <= s_dado_multi when seletor_modo(1) = '1' else s_dado_treino;
+  
+	registrador_jogada: registrador_n 
     generic map(
-      N => 12
+      N => 4
     )
     port map (
         clock => clock,
@@ -245,7 +296,7 @@ begin
     port map(
       clock => clock,
       reset => reset_ed,
-      sinal => s_chaveacionada,
+      sinal => ativar,
       pulso => pulso_out
     );
 
@@ -285,8 +336,20 @@ begin
       clock  => clock,
       clear  => limpaRC,
       enable => registraSel,
-      D      => chaves(3 downto 0),
+      D      => chaves,
       Q      => seletor_rodada
+    );
+
+  registrador_modo: registrador_n
+    generic map(
+      N => 2
+    )
+    port map(
+      clock  => clock,
+      clear  => limpaRC,
+      enable => registraModo,
+      D      => chaves(1 downto 0),
+      Q      => seletor_modo
     );
    
   multiplexador_rodada: mux16x1
@@ -315,8 +378,8 @@ begin
   s_fimL(15) <= s_rodada(3) and s_rodada(2) and s_rodada(1) and s_rodada(0);
   
   reset_ed        <= limpaRC;
-  s_chaveacionada <= chaves(0) or chaves(1) or chaves(2) or chaves(3) or chaves(4) or chaves(5) or chaves (6) or chaves(7) or chaves(8) or chaves(9) or chaves(10) or chaves(11);
   db_rodada       <= s_rodada;
+  db_jogada       <= s_jogada;
   db_contagem     <= s_endereco;
   db_memoria      <= s_dado;
   jogada          <= pulso_out;
