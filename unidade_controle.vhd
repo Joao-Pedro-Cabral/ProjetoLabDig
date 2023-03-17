@@ -51,12 +51,13 @@ entity unidade_controle is
         registraSel          : out std_logic;
         escreve_aleatório    : out std_logic;
         zeraI                : out std_logic;
+        ledS                 : out std_logic;
         db_estado            : out std_logic_vector(4 downto 0)
     );
 end entity;
 
 architecture fsm of unidade_controle is
-    type t_estado is (inicial, espera_selecao, registra_selecao, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, espera_nova_jogada);
+    type t_estado is (inicial, espera_dificuldade, registra_dificuldade, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, espera_nova_jogada, mostra_jogada, espera_mostra_jogada, registra_modo, espera_modo);
     signal Eatual, Eprox: t_estado;
 begin
 
@@ -73,10 +74,10 @@ begin
     -- logica de proximo estado
     Eprox <=
         inicial                   when  Eatual=inicial and iniciar='0' else
-        espera_selecao            when  Eatual=inicial and iniciar='1' else
-        espera_selecao            when  Eatual=espera_selecao and seleciona='0' else
-        registra_selecao          when  Eatual=espera_selecao and seleciona='1' else
-        inicializa_elementos      when  Eatual=registra_selecao else
+        espera_dificuldade        when  Eatual=inicial and iniciar='1' else
+        espera_dificuldade        when  Eatual=espera_dificuldade and seleciona='0' else
+        registra_dificuldade      when  Eatual=espera_dificuldade and seleciona='1' else
+        inicializa_elementos      when  Eatual=registra_dificuldade else
         inicializa_elementos      when  Eatual=inicializa_elementos and fimI = '0' else
         inicio_rodada             when  Eatual=inicializa_elementos and fimI = '1' else
         espera_jogada             when  Eatual=inicio_rodada else 
@@ -88,21 +89,24 @@ begin
         ultima_rodada             when  Eatual=compara_jogada and (enderecoIgualRodada='1' and jogada_correta = '1') else
         fim_perdeu                when  Eatual=compara_jogada and jogada_correta = '0' else
         espera_jogada             when  Eatual=proxima_jogada else
-        espera_nova_jogada        when  Eatual=ultima_rodada and fimL = '0' else
+        espera_nova_jogada        when  Eatual=ultima_rodada and fimL = '0' and modo="10" else
         fim_ganhou                when  Eatual=ultima_rodada and fimL = '1' else
 		espera_nova_jogada        when  Eatual=espera_nova_jogada and jogada = '0' else
 		escreve_jogada            when  Eatual=espera_nova_jogada and jogada = '1' else
-        mostra_jogada             when  Eatual=ultima_rodada and fimL='0' and modo!='10' else
+
+        espera_mostra_jogada      when  Eatual=ultima_rodada and fimL='0' and modo!="10" else
+        espera_mostra_jogada      when  Eatual=espera_mostra_jogada and jogada='1' else
+        mostra_jogada             when  Eatual=espera_mostra_jogada and jogada='0' else
         mostra_jogada             when  Eatual=mostra_jogada and fimI='0' else
 		proxima_rodada			  when  Eatual=escreve_jogada else
         proxima_rodada            when  Eatual=mostra_jogada and fimI='1' else   
         inicio_rodada             when  Eatual=proxima_rodada else
         fim_perdeu                when  Eatual=fim_perdeu and iniciar='0' else
-        espera_selecao            when  Eatual=fim_perdeu and iniciar='1' else
+        espera_dificuldade        when  Eatual=fim_perdeu and iniciar='1' else
         fim_ganhou                when  Eatual=fim_ganhou and iniciar='0' else
-        espera_selecao            when  Eatual=fim_ganhou and iniciar='1' else
+        espera_dificuldade        when  Eatual=fim_ganhou and iniciar='1' else
         fim_timeout               when  Eatual=fim_timeout and iniciar='0' else
-        espera_selecao            when  Eatual=fim_timeout and iniciar='1' else
+        espera_dificuldade        when  Eatual=fim_timeout and iniciar='1' else
         mostra_jogada             when 
         inicial; 
 
@@ -148,12 +152,16 @@ begin
                     '0' when others;
 					  
 	 with Eatual select
-		escreve <=  '1' when escreve_jogada,
+		escreve <=  '1' when escreve_jogada | espera_mostra_jogada,
 					'0' when others;
 
     with Eatual select
-        registraSel    <=   '1' when registra_selecao,
+        registraSel    <=   '1' when registra_dificuldade,
                             '0' when others;
+
+    with Eatual select 
+        ledS <= '1' when espera_mostra_jogada,
+                '0' when others;
 
     -- saida de depuracao (db_estado)
     with Eatual select
@@ -176,6 +184,7 @@ begin
                      "10000" when espera_modo,          --10 
                      "10001" when registra_modo,        --11
                      "10010" when mostra_jogada,        --12
+                     "10011" when espera_mostra_jogada, --13
                      "00000" when others;
 
 end architecture fsm;
