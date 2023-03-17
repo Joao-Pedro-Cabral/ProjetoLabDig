@@ -162,6 +162,7 @@ port map(
     jogada_correta         =>jogada_correta, 
     registraModo        => registraModo,
     modo                => modo,
+    leds                => leds,
     escreve_aleatorio   => escreve_aleatorio,
     registraSel         => registraSel,
     jogada              => jogada,          
@@ -171,7 +172,6 @@ port map(
     fimI     => fimI
 );
 
-leds       <= db_jogada_s when (db_estado_s="0001" and db_rodada_s="0000")  else botoes;
 db_memoria <= db_memoria_s;
 
 hex0: hexa7seg

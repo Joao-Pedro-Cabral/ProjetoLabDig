@@ -40,6 +40,7 @@ entity fluxo_dados is
           limpaRC                  : in  std_logic;
           registraModo             : in  std_logic;
           registraSel              : in  std_logic;
+          ledSel                   : in  std_logic;
           escreve_aleatorio        : in  std_logic;
           zeraT                    : in  std_logic;
           contaT                   : in  std_logic;
@@ -49,6 +50,7 @@ entity fluxo_dados is
           db_rodada                : out std_logic_vector(3 downto 0);
           db_jogada                : out std_logic_vector(3 downto 0);
           enderecoIgualRodada      : out std_logic;
+          leds                     : out std_logic_vector(3 downto 0);
           db_contagem              : out std_logic_vector(3 downto 0);
           db_memoria               : out std_logic_vector(3 downto 0);
           modo                     : out std_logic_vector(1 downto 0);
@@ -386,5 +388,6 @@ begin
   db_memoria      <= s_dado;
   jogada          <= pulso_out;
   modo            <= seletor_modo;
+  leds            <= s_dado when ledSel='1' else s_jogada;
   
 end architecture estrutural;
