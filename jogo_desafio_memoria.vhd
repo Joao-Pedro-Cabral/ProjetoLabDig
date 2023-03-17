@@ -23,11 +23,10 @@ entity jogo_desafio_memoria is
         iniciar   : in  std_logic;
         ativar    : in  std_logic;
         botoes    : in  std_logic_vector(3 downto 0);
-        leds      : out std_logic_vector(3 downto 0); --saida 
+        leds      : out std_logic_vector(3 downto 0);
         pronto    : out std_logic;
         ganhou    : out std_logic;
         perdeu    : out std_logic;
-        -- acrescentar saidas de depuracao
         db_jogada                : out std_logic_vector(6 downto 0);
         db_rodada                : out std_logic_vector(6 downto 0);
         db_contagem              : out std_logic_vector(6 downto 0);
