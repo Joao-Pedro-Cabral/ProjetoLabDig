@@ -32,7 +32,6 @@ entity unidade_controle is
         fimL                 : in  std_logic;
         fimI                 : in  std_logic;
         jogada               : in  std_logic;
-        seleciona            : in  std_logic;
         enderecoIgualRodada  : in  std_logic;
         jogada_correta       : in  std_logic;
         modo                 : in  std_logic_vector(1 downto 0);
@@ -74,9 +73,12 @@ begin
     -- logica de proximo estado
     Eprox <=
         inicial                   when  Eatual=inicial and iniciar='0' else
-        espera_dificuldade        when  Eatual=inicial and iniciar='1' else
-        espera_dificuldade        when  Eatual=espera_dificuldade and seleciona='0' else
-        registra_dificuldade      when  Eatual=espera_dificuldade and seleciona='1' else
+        espera_modo               when  Eatual=inicial and iniciar='1' else
+        espera_modo               when  Eatual=espera_modo and jogada='0' else
+        registra_modo             when  Eatual=espera_modo and jogada='1' else
+        espera_dificuldade        when  Eatual=registra_modo else
+        espera_dificuldade        when  Eatual=espera_dificuldade and jogada='0' else
+        registra_dificuldade      when  Eatual=espera_dificuldade and jogada = '0' else
         inicializa_elementos      when  Eatual=registra_dificuldade else
         inicializa_elementos      when  Eatual=inicializa_elementos and fimI = '0' else
         inicio_rodada             when  Eatual=inicializa_elementos and fimI = '1' else
