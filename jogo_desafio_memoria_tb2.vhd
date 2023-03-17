@@ -48,7 +48,7 @@ architecture tb of jogo_desafio_memoria_tb2 is
   signal rst_in     : std_logic := '0';
   signal iniciar_in : std_logic := '0';
   signal botoes_in  : std_logic_vector(3 downto 0) := "0000";
-  signal ativa_in   : std_logic := '0';
+  signal ativar_in   : std_logic := '0';
 
   ---- Declaracao dos sinais de saida
   signal ganhou_out     : std_logic := '0';
@@ -57,6 +57,7 @@ architecture tb of jogo_desafio_memoria_tb2 is
   signal leds_out       : std_logic_vector(3 downto 0);
   signal contagem_out   : std_logic_vector(6 downto 0) := "0000000";
   signal memoria_out    : std_logic_vector(6 downto 0);
+  signal jogada_out     : std_logic_vector(6 downto 0);
   signal estado_out     : std_logic_vector(6 downto 0) := "0000000";
   signal rodada_out     : std_logic_vector(6 downto 0);
 
@@ -123,7 +124,7 @@ begin
     assert false report "inicio da simulacao" severity note;
     keep_simulating <= '1';  -- inicia geracao do sinal de clock
 
-    ativa_in <= '0';
+    ativar_in <= '0';
     -- gera pulso de reset (1 periodo de clock)
     rst_in <= '1';
     wait for clockPeriod;
@@ -140,18 +141,18 @@ begin
     iniciar_in <= '0';
     wait for 10*clockPeriod;
     -- Escolher Modo
-    botoes_in  <= bit_vector(to_unsigned(modo, 4));
-    ativa_in   <= '1';
+    botoes_in  <= std_logic_vector(to_unsigned(modo, 4));
+    ativar_in   <= '1';
     wait for 10*clockPeriod;
     botoes_in  <= "0000";
-    ativa_in   <= '0'; 
+    ativar_in   <= '0'; 
     wait for 2*clockPeriod;
     -- Escolher Dificuldade
-    botoes_in  <= bit_vector(to_unsigned(rodada, 4));
-    ativa_in   <= '1';
+    botoes_in  <= std_logic_vector(to_unsigned(rodada, 4));
+    ativar_in   <= '1';
     -- botoes_in         <= "0100"; -- Cenário 4
     wait for 2*clockPeriod;
-    ativa_in   <= '0'; 
+    ativar_in   <= '0'; 
     botoes_in  <= "0000";
     wait for 1005*clockPeriod;
     tests(0) <= leds_out;
@@ -191,14 +192,14 @@ begin
             -- Modo multijogador -> jogador escreve a próxima jogada
             if(modo = 3) then
               botoes_in  <= tests(k);
-              ativa_in   <= '1';
+              ativar_in   <= '1';
             -- Demais modos -> jogador ve a jogada, determinada pela FPGA, e imita ela
-            else then
+            else
               tests(k) <= leds_out;
             end if;
-          else then
+          else
             botoes_in <= tests(k);
-            ativa_in  <= '1';
+            ativar_in  <= '1';
           end if;
           wait for clockPeriod;
           assert leds_out     = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
@@ -207,7 +208,7 @@ begin
           assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
           wait for 9*clockPeriod;
           botoes_in  <= "0000";
-          ativa_in   <= '0';
+          ativar_in   <= '0';
           wait for clockPeriod;
           assert leds_out     = "0000"   report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
           assert pronto_out   = '0'      report "bad  pronto"                             severity error;

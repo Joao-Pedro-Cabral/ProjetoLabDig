@@ -171,7 +171,7 @@ component LSFR_viciado is
   port(
       clock           : in  std_logic;
       reset           : in  std_logic;
-      pseudo_random   : out std_logic(3 downto 0) -- Número pseudo-aleatório
+      pseudo_random   : out std_logic_vector(3 downto 0) -- Número pseudo-aleatório
   );
 end component;
 
@@ -227,7 +227,7 @@ begin
       igual => enderecoIgualRodada
     );
 
-  gerador_pseudo_aleatorio: LSFR_viciado is
+  gerador_pseudo_aleatorio: LSFR_viciado
       port map(
           clock           => clock,
           reset           => limpaRC,

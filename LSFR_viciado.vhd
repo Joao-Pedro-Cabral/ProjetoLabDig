@@ -1,9 +1,12 @@
 
+library ieee;
+use ieee.std_logic_1164.all;
+
 entity LSFR_viciado is
     port(
         clock           : in  std_logic;
         reset           : in  std_logic;
-        pseudo_random   : out std_logic(3 downto 0); -- Número pseudo-aleatório
+        pseudo_random   : out std_logic_vector(3 downto 0) -- Número pseudo-aleatório
     );
 end entity;
 
@@ -29,18 +32,19 @@ begin
     -- LSFR
         -- Multiplicação polinomial
     register_generate: for i in 0 to 3 generate
-        generate_0: if(i = 0) generate
-            register: register_d_bit generic map('1') port map(pse_rand(i), clock, '1', reset, pse_rand(i + 1));
-        generate_i: else generate
-            register: register_d_bit generic map('0') port map(pse_rand(i), clock, '1', reset, pse_rand(i + 1));
-        end generate;
-    end generate;
+        generate_0: if i = 0 generate
+            register0: component register_d_bit generic map('1') port map(pse_rand(i), clock, '1', reset, pse_rand(i + 1));
+        end generate generate_0;
+        generate_i: if i > 0 generate
+            registeri: component register_d_bit generic map('0') port map(pse_rand(i), clock, '1', reset, pse_rand(i + 1));
+        end generate generate_i;
+    end generate register_generate;
 
         -- Resto da divisão polinomial
     pse_rand(0) <= pse_rand(4) xor pse_rand(3);
 
     -- Viciando a saída(C5(2x), G4,(2x), C4(2x))
-    with pse_rand select
+    with pse_rand(4 downto 1) select
     pseudo_random <= 
                     "0000" when "0000", -- Valor impossível
                                         -- Valores não viciados
@@ -60,4 +64,5 @@ begin
                     "0101" when "1101", -- C5
                     "1000" when "1110", -- G4
                     "1100" when "1111", -- C4
+                    "0000" when others;
 end architecture;
