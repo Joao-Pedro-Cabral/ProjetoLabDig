@@ -237,7 +237,7 @@ begin
   --memoria: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
   memoria_multijogador: entity work.ram (ram_multijogador) -- usar arquitetura para ModelSim
     -- generic map(
-      -- init_file => "ram_treino_1.mif" -- Quartus
+      -- init_file => "ram_treino_1.mif" -- Quartus -> Será totalmente sobrescrita durante a partida
     -- )
     port map (
        clk          => clock,
