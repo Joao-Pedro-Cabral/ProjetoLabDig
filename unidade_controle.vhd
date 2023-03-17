@@ -107,7 +107,6 @@ begin
         espera_dificuldade        when  Eatual=fim_ganhou and iniciar='1' else
         fim_timeout               when  Eatual=fim_timeout and iniciar='0' else
         espera_dificuldade        when  Eatual=fim_timeout and iniciar='1' else
-        mostra_jogada             when 
         inicial; 
 
     -- logica de saída (maquina de Moore)
@@ -162,6 +161,10 @@ begin
     with Eatual select 
         ledS <= '1' when espera_mostra_jogada,
                 '0' when others;
+
+    with Eatual select 
+        zeraI <= '1' when espera_mostra_jogada | registra_dificuldade,
+                '0' when others;  
 
     -- saida de depuracao (db_estado)
     with Eatual select
