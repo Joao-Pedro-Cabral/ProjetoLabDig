@@ -43,6 +43,7 @@ entity fluxo_dados is
           escreve_aleatorio        : in  std_logic;
           zeraT                    : in  std_logic;
           contaT                   : in  std_logic;
+          zeraI                    : in  std_logic;
           contaI                   : in  std_logic;
 --Saidas
           db_rodada                : out std_logic_vector(3 downto 0);
@@ -245,7 +246,7 @@ begin
        dado_saida   => s_dado_multi
     );
 
-    s_escrita <= s_aleatorio when (seletor_modo(0) or escreve_aleatorio) = '1' else s_jogada;
+  s_escrita <= s_aleatorio when (seletor_modo(0) or escreve_aleatorio) = '1' else s_jogada;
 
   --memoria_treino_1: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
   memoria_treino_1: entity work.ram (ram_treino_1) -- usar arquitetura para ModelSim
@@ -322,7 +323,7 @@ begin
       port map(
         clock   => clock,
         zera_as => '0',
-        zera_s  => limpaRC,
+        zera_s  => zeraI,
         conta   => contaI,
         Q       => open,
         fim     => fimI,

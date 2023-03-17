@@ -143,6 +143,7 @@ begin
     wait for 10*clockPeriod;
     botoes_in  <= "0000";
     ativa_in   <= '0'; 
+    wait for 2*clockPeriod;
     -- Escolher Dificuldade
     botoes_in  <= bit_vector(to_unsigned(rodada, 4));
     ativa_in   <= '1';
