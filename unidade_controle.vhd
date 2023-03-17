@@ -51,7 +51,7 @@ entity unidade_controle is
         registraSel          : out std_logic;
         escreve_aleatório    : out std_logic;
         zeraI                : out std_logic;
-        ledSel                 : out std_logic;
+        ledSel               : out std_logic;
         db_estado            : out std_logic_vector(4 downto 0)
     );
 end entity;
