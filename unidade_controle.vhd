@@ -48,6 +48,7 @@ entity unidade_controle is
         pronto               : out std_logic;
 		escreve				 : out std_logic;
         registraSel          : out std_logic;
+        registraModo         : out std_logic;
         escreve_aleatório    : out std_logic;
         zeraI                : out std_logic;
         ledSel               : out std_logic;
@@ -166,7 +167,16 @@ begin
 
     with Eatual select 
         zeraI <= '1' when espera_mostra_jogada | registra_dificuldade,
-                '0' when others;  
+                '0' when others; 
+
+    with Eatual select 
+        registraModo <= '1' when registra_modo,
+                '0' when others; 
+
+    with Eatual select 
+        escreve_aleatorio <= '1' when registra_modo,
+                '0' when others; 
+            
 
     -- saida de depuracao (db_estado)
     with Eatual select
