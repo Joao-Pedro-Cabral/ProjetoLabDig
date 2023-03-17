@@ -66,10 +66,10 @@ architecture tb of jogo_desafio_memoria_tb2 is
   constant clockPeriod : time := 20 ns;     -- frequencia 100MHz
 
   -- Configuração de jogo
-  constant rodada        : natural := 5; -- Nível de dificuldade
-  constant modo          : natural := 2;
-  constant rodada_perder : natural := 4;
-  constant jogada_perder : natural := 3;
+  constant rodada        : natural := 11; -- Nível de dificuldade
+  constant modo          : natural := 3;
+  constant rodada_perder : natural := 3;
+  constant jogada_perder : natural := 2;
 
   -- Array de testes
   type   test_vector is array(0 to 15) of std_logic_vector(3 downto 0);
@@ -151,7 +151,7 @@ begin
     botoes_in  <= std_logic_vector(to_unsigned(rodada, 4));
     ativar_in   <= '1';
     -- botoes_in         <= "0100"; -- Cenário 4
-    wait for 2*clockPeriod;
+    wait for 10*clockPeriod;
     ativar_in   <= '0'; 
     botoes_in  <= "0000";
     wait for 1005*clockPeriod;
@@ -172,7 +172,7 @@ begin
         if(k = jogada_perder and i = rodada_perder) then
           botoes_in  <= "1111";
           ativar_in  <= '1';
-          wait for clockPeriod;
+          wait for 3*clockPeriod;
           assert leds_out     = "1111"   report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
           assert pronto_out   = '0'      report "bad  pronto"                             severity error;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
@@ -180,7 +180,7 @@ begin
           wait for 9*clockPeriod;
           botoes_in  <= "0000";
           ativar_in  <= '0';
-          wait for clockPeriod;
+          wait for 3*clockPeriod;
           assert leds_out     = "0000"   report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
           assert pronto_out   = '1'      report "bad  pronto"                             severity error;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
@@ -190,27 +190,32 @@ begin
         elsif(pronto_out = '0' or perdeu_out = '0') then
           if(k = i + 1) then
             -- Modo multijogador -> jogador escreve a próxima jogada
-            if(modo = 3) then
+            if(modo = 2) then
               botoes_in  <= tests(k);
               ativar_in   <= '1';
+              wait for 3*clockPeriod;
+              assert leds_out     = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
             -- Demais modos -> jogador ve a jogada, determinada pela FPGA, e imita ela
             else
+              wait for 1000*clockPeriod;
               tests(k) <= leds_out;
+              wait for 500*clockPeriod;
+              assert leds_out     = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
+              wait for 503*clockPeriod;
             end if;
           else
             botoes_in <= tests(k);
             ativar_in  <= '1';
+            wait for 3*clockPeriod;
+            assert leds_out     = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
           end if;
-          wait for clockPeriod;
-          assert leds_out     = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
           assert pronto_out   = '0'      report "bad  pronto"                             severity error;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
           wait for 9*clockPeriod;
           botoes_in  <= "0000";
-          ativar_in   <= '0';
+          ativar_in  <= '0';
           wait for clockPeriod;
-          assert leds_out     = "0000"   report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
           assert pronto_out   = '0'      report "bad  pronto"                             severity error;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;

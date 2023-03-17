@@ -32,6 +32,7 @@ entity unidade_controle is
         fimL                 : in  std_logic;
         fimI                 : in  std_logic;
         jogada               : in  std_logic;
+        ativar               : in  std_logic;
         enderecoIgualRodada  : in  std_logic;
         jogada_correta       : in  std_logic;
         modo                 : in  std_logic_vector(1 downto 0);
@@ -48,6 +49,7 @@ entity unidade_controle is
         pronto               : out std_logic;
 		escreve				 : out std_logic;
         registraSel          : out std_logic;
+        registraModo         : out std_logic;
         escreve_aleatorio    : out std_logic;
         zeraI                : out std_logic;
         ledSel               : out std_logic;
@@ -78,7 +80,7 @@ begin
         registra_modo             when  Eatual=espera_modo and jogada='1' else
         espera_dificuldade        when  Eatual=registra_modo else
         espera_dificuldade        when  Eatual=espera_dificuldade and jogada='0' else
-        registra_dificuldade      when  Eatual=espera_dificuldade and jogada = '0' else
+        registra_dificuldade      when  Eatual=espera_dificuldade and jogada='1' else
         inicializa_elementos      when  Eatual=registra_dificuldade else
         inicializa_elementos      when  Eatual=inicializa_elementos and fimI = '0' else
         inicio_rodada             when  Eatual=inicializa_elementos and fimI = '1' else
@@ -95,10 +97,9 @@ begin
         fim_ganhou                when  Eatual=ultima_rodada and fimL = '1' else
 		espera_nova_jogada        when  Eatual=espera_nova_jogada and jogada = '0' else
 		escreve_jogada            when  Eatual=espera_nova_jogada and jogada = '1' else
-
-        espera_mostra_jogada      when  Eatual=ultima_rodada and fimL='0' and modo!="10" else
-        espera_mostra_jogada      when  Eatual=espera_mostra_jogada and jogada='1' else
-        mostra_jogada             when  Eatual=espera_mostra_jogada and jogada='0' else
+        espera_mostra_jogada      when  Eatual=ultima_rodada and fimL='0' and (not (modo(0) = '0' and modo(1) = '1')) else
+        espera_mostra_jogada      when  Eatual=espera_mostra_jogada and ativar='1' else
+        mostra_jogada             when  Eatual=espera_mostra_jogada and ativar='0' else
         mostra_jogada             when  Eatual=mostra_jogada and fimI='0' else
 		proxima_rodada			  when  Eatual=escreve_jogada else
         proxima_rodada            when  Eatual=mostra_jogada and fimI='1' else   
@@ -153,7 +154,7 @@ begin
                     '0' when others;
 					  
 	 with Eatual select
-		escreve <=  '1' when escreve_jogada | espera_mostra_jogada,
+		escreve <=  '1' when escreve_jogada | espera_mostra_jogada | registra_modo,
 					'0' when others;
 
     with Eatual select
@@ -161,7 +162,7 @@ begin
                             '0' when others;
 
     with Eatual select 
-        ledSel <= '1' when espera_mostra_jogada,
+        ledSel <= '1' when mostra_jogada | inicializa_elementos,
                 '0' when others;
 
     with Eatual select 

@@ -259,7 +259,7 @@ begin
        clk          => clock,
        endereco     => s_endereco,
        dado_entrada => "0000", -- ROM
-       we           => '0',    -- ROM
+       we           => '1',    -- ROM
        ce           => '0',
        dado_saida   => s_dado_treino_1
     );
@@ -273,7 +273,7 @@ begin
        clk          => clock,
        endereco     => s_endereco,
        dado_entrada => "0000", -- ROM
-       we           => '0',    -- ROM
+       we           => '1',    -- ROM
        ce           => '0',
        dado_saida   => s_dado_treino_2
     );
@@ -388,6 +388,6 @@ begin
   db_memoria      <= s_dado;
   jogada          <= pulso_out;
   modo            <= seletor_modo;
-  leds            <= s_dado when ledSel='1' else s_jogada;
+  leds            <= s_dado when ledSel='1' else chaves;
   
 end architecture estrutural;

@@ -81,6 +81,7 @@ architecture inicial of jogo_desafio_memoria is
             iniciar              : in  std_logic;
             fimL                 : in  std_logic;
             fimI                 : in  std_logic;
+            ativar               : in  std_logic;
             jogada               : in  std_logic;
             enderecoIgualRodada  : in  std_logic;
             jogada_correta       : in  std_logic;
@@ -93,6 +94,7 @@ architecture inicial of jogo_desafio_memoria is
             zeraE                : out std_logic;
             zeraT                : out std_logic;
             registraRC           : out std_logic;
+            registraModo         : out std_logic;
             ganhou               : out std_logic;
             perdeu               : out std_logic;
             pronto               : out std_logic;
@@ -132,10 +134,14 @@ port map(
         contaCR    =>contaCR,         
         limpaRC    => limpaRC,          
         contaE     => contaE,
+        ativar     => ativar,
         zeraE           => zeraE,   
         zeraT            => zeraT,
+        ledSel           => ledSel,
         zeraI            => zeraI,
-        registraRC           =>registraRC,
+        registraModo         => registraModo,
+        registraRC           => registraRC,
+        escreve_aleatorio    => escreve_aleatorio,
         registraSel         => registraSel,
         ganhou       => ganhou,       
         perdeu       => perdeu,      
