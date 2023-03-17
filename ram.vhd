@@ -74,7 +74,7 @@ end architecture ram_mif;
 -- Dados iniciais (para simulacao com Modelsim) 
 architecture ram_multijogador of ram is
   type   arranjo_memoria is array(0 to 15) of std_logic_vector(3 downto 0);
-  signal memoria : arranjo_memoria := ( --C_Major ? (AINDA EM DEBATE)
+  signal memoria : arranjo_memoria := ( --C_Major ? 
                                         "0001", --G5 (783.99 Hz)
                                         "0010", --F5
                                         "0011", --E5
@@ -115,23 +115,23 @@ end architecture ram_multijogador;
 
 architecture ram_treino_1 of ram is
   type   arranjo_memoria is array(0 to 15) of std_logic_vector(3 downto 0);
-  signal memoria : arranjo_memoria := ( --C_Major ? (AINDA EM DEBATE)
-                                        "0001", --G5 (783.99 Hz)
-                                        "0010", --F5
-                                        "0011", --E5
-                                        "0100", --D5
-                                        "0101", --C5 (523.25 Hz)
-                                        "0110", --B5
-                                        "0111", --A5
-                                        "1000", --G4
+  signal memoria : arranjo_memoria := ( --Twinkle, Twinkle, Little Star
+                                        "1100", --
+                                        "1100", --
+                                        "1000", --E5
+                                        "1000",
+                                        "0111", --D5
+                                        "0111", --C5 (523.25 Hz)
+                                        "1000", --B5
+                                        "1000", --A5
+                                        "1001", --G4
                                         "1001", --F4
                                         "1010", --E4
+                                        "1010", --D4
+                                        "1011", --C4 (261.63 Hz) 
                                         "1011", --D4
-                                        "1100", --C4 (261.63 Hz) 
-                                        "1011", --D4
-                                        "1010", --E4
-                                        "1001", --F4
-                                        "1000");--G4
+                                        "1100", --E4
+                                        "1100");--G4
   
 begin
 
@@ -156,23 +156,23 @@ end architecture ram_treino_1;
 
 architecture ram_treino_2 of ram is
   type   arranjo_memoria is array(0 to 15) of std_logic_vector(3 downto 0);
-  signal memoria : arranjo_memoria := ( --C_Major ? (AINDA EM DEBATE)
-                                        "0001", --G5 (783.99 Hz)
-                                        "0010", --F5
-                                        "0011", --E5
-                                        "0100", --D5
-                                        "0101", --C5 (523.25 Hz)
-                                        "0110", --B5
-                                        "0111", --A5
-                                        "1000", --G4
-                                        "1001", --F4
-                                        "1010", --E4
-                                        "1011", --D4
-                                        "1100", --C4 (261.63 Hz) 
-                                        "1011", --D4
-                                        "1010", --E4
-                                        "1001", --F4
-                                        "1000");--G4
+  signal memoria : arranjo_memoria := ( --Hall of Fame (Pokemon)
+                                        "0101", 
+                                        "1000", 
+                                        "0101", 
+                                        "0100",
+                                        "0101", 
+                                        "1000", 
+                                        "0101", 
+                                        "0010", 
+                                        "0011",
+                                        "0100", 
+                                        "0101", 
+                                        "1000", 
+                                        "0101", 
+                                        "0100", 
+                                        "0101", 
+                                        "0101");
   
 begin
 

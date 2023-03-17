@@ -73,9 +73,12 @@ begin
     -- logica de proximo estado
     Eprox <=
         inicial                   when  Eatual=inicial and iniciar='0' else
-        espera_dificuldade        when  Eatual=inicial and iniciar='1' else
+        espera_modo               when  Eatual=inicial and iniciar='1' else
+        espera_modo               when  Eatual=espera_modo and jogada='0' else
+        registra_modo             when  Eatual=espera_modo and jogada='1' else
+        espera_dificuldade        when  Eatual=registra_modo else
         espera_dificuldade        when  Eatual=espera_dificuldade and jogada='0' else
-        registra_dificuldade      when  Eatual=espera_dificuldade and jogada='1' else
+        registra_dificuldade      when  Eatual=espera_dificuldade and jogada = '0' else
         inicializa_elementos      when  Eatual=registra_dificuldade else
         inicializa_elementos      when  Eatual=inicializa_elementos and fimI = '0' else
         inicio_rodada             when  Eatual=inicializa_elementos and fimI = '1' else
@@ -163,7 +166,16 @@ begin
 
     with Eatual select 
         zeraI <= '1' when espera_mostra_jogada | registra_dificuldade,
-                '0' when others;  
+                '0' when others; 
+
+    with Eatual select 
+        registraModo <= '1' when registra_modo,
+                '0' when others; 
+
+    with Eatual select 
+        escreve_aleatorio <= '1' when registra_modo,
+                '0' when others; 
+            
 
     -- saida de depuracao (db_estado)
     with Eatual select
