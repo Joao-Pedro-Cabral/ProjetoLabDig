@@ -40,22 +40,24 @@ entity fluxo_dados is
           limpaRC                  : in  std_logic;
           registraModo             : in  std_logic;
           registraSel              : in  std_logic;
-          ledSel                   : in  std_logic;
+          notaSel                  : in  std_logic;
           escreve_aleatorio        : in  std_logic;
           zeraT                    : in  std_logic;
           contaT                   : in  std_logic;
           zeraI                    : in  std_logic;
           contaI                   : in  std_logic;
+          nao_tocar                : in  std_logic;
 --Saidas
           db_rodada                : out std_logic_vector(3 downto 0);
           db_jogada                : out std_logic_vector(3 downto 0);
           enderecoIgualRodada      : out std_logic;
-          leds                     : out std_logic_vector(3 downto 0);
+          notas                    : out std_logic_vector(3 downto 0);
           db_contagem              : out std_logic_vector(3 downto 0);
           db_memoria               : out std_logic_vector(3 downto 0);
           modo                     : out std_logic_vector(1 downto 0);
           jogada_correta           : out std_logic;
           jogada                   : out std_logic;
+          jogador                  : out std_logic;
           fimL                     : out std_logic;
           fimE                     : out std_logic;
           fimT                     : out std_logic;
@@ -72,6 +74,7 @@ architecture estrutural of fluxo_dados is
   signal s_jogada        : std_logic_vector(3 downto 0);
   signal s_escrita       : std_logic_vector(3 downto 0);
   signal s_aleatorio     : std_logic_vector(3 downto 0);
+  signal s_notas         : std_logic_vector(3 downto 0);
   signal s_fimL          : std_logic_vector(15 downto 0);
   signal s_dado          : std_logic_vector(3 downto 0);
   signal s_dado_multi    : std_logic_vector(3 downto 0);
@@ -320,7 +323,7 @@ begin
 
   temporizador_inicial: contador_m
       generic map(
-        M => 2000
+        M => 1000
       )
       port map(
         clock   => clock,
@@ -383,11 +386,18 @@ begin
   
   reset_ed        <= limpaRC;
   db_rodada       <= s_rodada;
+  jogador         <= s_rodada(0);
   db_jogada       <= s_jogada;
   db_contagem     <= s_endereco;
   db_memoria      <= s_dado;
   jogada          <= pulso_out;
   modo            <= seletor_modo;
-  leds            <= s_dado when ledSel='1' else chaves;
+  s_notas         <= s_dado when notaSel='1' else chaves;
+
+  -- Impedir que notas falsas sejam tocadas pelo buzzer
+  notas(0)        <= s_notas(0) and (not nao_tocar);
+  notas(1)        <= s_notas(1) and (not nao_tocar);
+  notas(2)        <= s_notas(2) and (not nao_tocar);
+  notas(3)        <= s_notas(3) and (not nao_tocar);
   
 end architecture estrutural;

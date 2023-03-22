@@ -1,5 +1,5 @@
 --------------------------------------------------------------------
--- Arquivo   : jogo_desafio_memoria.vhd
+-- Arquivo   : genius_musical.vhd
 -- Projeto   : Experiencia 6 - Projeto do Jogo do Desafio da Memória
 --------------------------------------------------------------------
 -- Descricao : circuito da atividade 1 para Exp. 5 
@@ -16,15 +16,15 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity jogo_desafio_memoria is
+entity genius_musical is
     port (
         clock     : in  std_logic;
         reset     : in  std_logic;
         iniciar   : in  std_logic;
         ativar    : in  std_logic;
         botoes    : in  std_logic_vector(3 downto 0);
-        leds      : out std_logic_vector(3 downto 0);
-        pronto    : out std_logic;
+        notas     : out std_logic_vector(3 downto 0);
+        jogador   : out std_logic;
         ganhou    : out std_logic;
         perdeu    : out std_logic;
         db_jogada                : out std_logic_vector(6 downto 0);
@@ -35,7 +35,7 @@ entity jogo_desafio_memoria is
     );
    end entity;
 
-architecture inicial of jogo_desafio_memoria is
+architecture inicial of genius_musical is
 
     component fluxo_dados is
         port(
@@ -51,22 +51,24 @@ architecture inicial of jogo_desafio_memoria is
             limpaRC                  : in  std_logic;
             registraModo             : in  std_logic;
             registraSel              : in  std_logic;
-            ledSel                   : in  std_logic;
+            notaSel                  : in  std_logic;
             escreve_aleatorio        : in  std_logic;
             zeraT                    : in  std_logic;
             contaT                   : in  std_logic;
             zeraI                    : in  std_logic;
             contaI                   : in  std_logic;
+            nao_tocar                : in std_logic;
         --Saidas
             db_rodada                : out std_logic_vector(3 downto 0);
             db_jogada                : out std_logic_vector(3 downto 0);
             enderecoIgualRodada      : out std_logic;
-            leds                     : out std_logic_vector(3 downto 0);
+            notas                    : out std_logic_vector(3 downto 0);
             db_contagem              : out std_logic_vector(3 downto 0);
             db_memoria               : out std_logic_vector(3 downto 0);
             modo                     : out std_logic_vector(1 downto 0);
             jogada_correta           : out std_logic;
             jogada                   : out std_logic;
+            jogador                  : out std_logic;
             fimL                     : out std_logic;
             fimE                     : out std_logic;
             fimT                     : out std_logic;
@@ -93,16 +95,16 @@ architecture inicial of jogo_desafio_memoria is
             contaE               : out std_logic;
             zeraE                : out std_logic;
             zeraT                : out std_logic;
+            nao_tocar            : out std_logic;
             registraRC           : out std_logic;
             registraModo         : out std_logic;
             ganhou               : out std_logic;
             perdeu               : out std_logic;
-            pronto               : out std_logic;
             escreve				 : out std_logic;
             registraSel          : out std_logic;
             escreve_aleatorio    : out std_logic;
             zeraI                : out std_logic;
-            ledSel               : out std_logic;
+            notaSel              : out std_logic;
             db_estado            : out std_logic_vector(4 downto 0)
         );
     end component;
@@ -115,7 +117,7 @@ component hexa7seg is
 end component;
 
 signal  db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
-signal  zeraI, registraModo, ledSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  nao_tocar, zeraI, registraModo, notaSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 signal  modo : std_logic_vector(1 downto 0);
 
 begin
@@ -127,6 +129,7 @@ port map(
         iniciar    => iniciar,          
         fimL      => fimL,                  
         jogada        => jogada,
+        nao_tocar    => nao_tocar,
         enderecoIgualRodada  => enderecoIgualRodada,
         jogada_correta =>  jogada_correta,  
         timeout   => fimT,
@@ -137,7 +140,7 @@ port map(
         ativar     => ativar,
         zeraE           => zeraE,   
         zeraT            => zeraT,
-        ledSel           => ledSel,
+        notaSel           => notaSel,
         zeraI            => zeraI,
         registraModo         => registraModo,
         registraRC           => registraRC,
@@ -145,7 +148,6 @@ port map(
         registraSel         => registraSel,
         ganhou       => ganhou,       
         perdeu       => perdeu,      
-        pronto      => pronto,
 		escreve     => escreve,
         modo        => modo,
         db_estado => db_estado_s,
@@ -162,6 +164,7 @@ port map(
     zeraE            => zeraE,           
     escreve           => escreve, 
     ativar    => ativar,
+    nao_tocar => nao_tocar,
     chaves          => botoes,             
     registraRC        => registraRC,         
     limpaRC          => limpaRC, 
@@ -177,10 +180,11 @@ port map(
     jogada_correta         =>jogada_correta, 
     registraModo        => registraModo,
     modo                => modo,
-    leds                => leds,
+    jogador             => jogador,
+    notas                => notas,
     escreve_aleatorio   => escreve_aleatorio,
     registraSel         => registraSel,
-    ledSel              => ledSel,
+    notaSel              => notaSel,
     jogada              => jogada,          
     fimL                   => fimL,    
     fimE       => open,                  

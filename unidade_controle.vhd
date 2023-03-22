@@ -46,13 +46,13 @@ entity unidade_controle is
         registraRC           : out std_logic;
         ganhou               : out std_logic;
         perdeu               : out std_logic;
-        pronto               : out std_logic;
 		escreve				 : out std_logic;
         registraSel          : out std_logic;
         registraModo         : out std_logic;
         escreve_aleatorio    : out std_logic;
         zeraI                : out std_logic;
-        ledSel               : out std_logic;
+        notaSel              : out std_logic;
+        nao_tocar            : out std_logic;
         db_estado            : out std_logic_vector(4 downto 0)
     );
 end entity;
@@ -138,10 +138,6 @@ begin
                       '0' when others;
 
     with Eatual select
-        pronto <=     '1' when fim_ganhou | fim_perdeu | fim_timeout,
-                      '0' when others;
-
-    with Eatual select
         ganhou <=      '1' when fim_ganhou,
                        '0' when others;
 
@@ -162,8 +158,8 @@ begin
                             '0' when others;
 
     with Eatual select 
-        ledSel <= '1' when mostra_jogada | inicializa_elementos,
-                '0' when others;
+        notaSel     <=  '1' when mostra_jogada | inicializa_elementos,
+                        '0' when others;
 
     with Eatual select 
         zeraI <= '1' when espera_mostra_jogada | registra_dificuldade,
@@ -176,6 +172,10 @@ begin
     with Eatual select 
         escreve_aleatorio <= '1' when registra_modo,
                 '0' when others; 
+
+    with Eatual select
+        nao_tocar   <= '1' when inicial | espera_dificuldade | registra_dificuldade | fim_ganhou | fim_perdeu | fim_timeout | registra_modo | espera_modo,
+                       '0' when others;
             
 
     -- saida de depuracao (db_estado)

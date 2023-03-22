@@ -1,10 +1,10 @@
 --------------------------------------------------------------------------
--- Arquivo   : jogo_desafio_memoria_tb2.vhd
+-- Arquivo   : genius_musical_tb.vhd
 -- Projeto   : Experiencia 06 - Projeto Base do Jogo do Desafio da Memória
 --------------------------------------------------------------------------
 -- Descricao : testbench para simulação com ModelSim
 --
---             Cenário: Jogador perde por errar
+--             Cenário: Jogador vence
 --             
 --------------------------------------------------------------------------
 -- Revisoes  :
@@ -18,21 +18,21 @@ use ieee.numeric_std.all;
 use std.textio.all;
 
 -- entidade do testbench
-entity jogo_desafio_memoria_tb2 is
+entity genius_musical_tb is
 end entity;
 
-architecture tb of jogo_desafio_memoria_tb2 is
+architecture tb of genius_musical_tb is
 
   -- Componente a ser testado (Device Under Test -- DUT)
-  component jogo_desafio_memoria is
+  component genius_musical is
     port (
       clock     : in  std_logic;
       reset     : in  std_logic;
       iniciar   : in  std_logic;
       ativar    : in  std_logic;
       botoes    : in  std_logic_vector(3 downto 0);
-      leds      : out std_logic_vector(3 downto 0);
-      pronto    : out std_logic;
+      notas     : out std_logic_vector(3 downto 0);
+      jogador   : out std_logic;
       ganhou    : out std_logic;
       perdeu    : out std_logic;
       db_jogada                : out std_logic_vector(6 downto 0);
@@ -48,13 +48,13 @@ architecture tb of jogo_desafio_memoria_tb2 is
   signal rst_in     : std_logic := '0';
   signal iniciar_in : std_logic := '0';
   signal botoes_in  : std_logic_vector(3 downto 0) := "0000";
-  signal ativar_in   : std_logic := '0';
+  signal ativar_in  : std_logic := '0';
 
   ---- Declaracao dos sinais de saida
   signal ganhou_out     : std_logic := '0';
   signal perdeu_out     : std_logic := '0';
-  signal pronto_out     : std_logic := '0';
-  signal leds_out       : std_logic_vector(3 downto 0);
+  signal jogador_out    : std_logic := '0';
+  signal notas_out      : std_logic_vector(3 downto 0);
   signal contagem_out   : std_logic_vector(6 downto 0) := "0000000";
   signal memoria_out    : std_logic_vector(6 downto 0);
   signal jogada_out     : std_logic_vector(6 downto 0);
@@ -66,10 +66,8 @@ architecture tb of jogo_desafio_memoria_tb2 is
   constant clockPeriod : time := 20 ns;     -- frequencia 100MHz
 
   -- Configuração de jogo
-  constant rodada        : natural := 11; -- Nível de dificuldade
-  constant modo          : natural := 3;
-  constant rodada_perder : natural := 3;
-  constant jogada_perder : natural := 2;
+  constant rodada : natural := 16; -- Nível de dificuldade
+  constant modo   : natural := 3;
 
   -- Array de testes
   type   test_vector is array(0 to 15) of std_logic_vector(3 downto 0);
@@ -98,7 +96,7 @@ begin
   clk_in <= (not clk_in) and keep_simulating after clockPeriod/2;
   
   ---- DUT para Simulacao
-  DUT: jogo_desafio_memoria
+  DUT: genius_musical
        port map (
           clock           => clk_in,
           reset           => rst_in,
@@ -107,8 +105,8 @@ begin
           botoes          => botoes_in,
           ganhou          => ganhou_out,
           perdeu          => perdeu_out,
-          pronto          => pronto_out,
-          leds            => leds_out,
+          jogador         => jogador_out,
+          notas           => notas_out,
           db_jogada       => jogada_out,
           db_contagem     => contagem_out,
           db_estado       => estado_out,
@@ -148,80 +146,79 @@ begin
     ativar_in   <= '0'; 
     wait for 2*clockPeriod;
     -- Escolher Dificuldade
-    botoes_in  <= std_logic_vector(to_unsigned(rodada, 4));
+    botoes_in  <= std_logic_vector(to_unsigned(rodada-1, 4));
     ativar_in   <= '1';
-    -- botoes_in         <= "0100"; -- Cenário 4
     wait for 10*clockPeriod;
     ativar_in   <= '0'; 
     botoes_in  <= "0000";
-    wait for 1005*clockPeriod;
-    tests(0) <= leds_out;
-    assert pronto_out   = '0'    report "bad initial pronto"                      severity error;
+    wait for 505*clockPeriod;
+    tests(0) <= notas_out;
     assert ganhou_out   = '0'    report "bad initial ganhou"                      severity error;
     assert perdeu_out   = '0'    report "bad initial perdeu"                      severity error;
-    wait for 1000*clockPeriod;
-    
+    wait for 500*clockPeriod;
     -- Cada iteração corresponde a uma rodada
     for i in 0 to rodada - 1 loop
       assert false report "Rodada " & integer'image(i) severity note;
       -- Cada iteração corresponde a uma jogada
-      -- Pressuponho que todas as derrotas sejam antes da última rodada
-      -- E que não sejam na jogada de escrita
-      for k in 0 to i + 1 loop
-        -- Perder
-        if(k = jogada_perder and i = rodada_perder) then
-          botoes_in  <= "1111";
-          ativar_in  <= '1';
+      -- Última rodada -> sem escrita
+      if(i = rodada - 1) then
+        for k in 0 to i loop 
+          botoes_in  <= tests(k);
+          ativar_in   <= '1';
           wait for 3*clockPeriod;
-          assert leds_out     = "1111"   report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
-          assert pronto_out   = '0'      report "bad  pronto"                             severity error;
-          assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
-          assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
-          wait for 9*clockPeriod;
-          botoes_in  <= "0000";
-          ativar_in  <= '0';
-          wait for 3*clockPeriod;
-          assert leds_out     = "0000"   report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
-          assert pronto_out   = '1'      report "bad  pronto"                             severity error;
-          assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
-          assert perdeu_out   = '1'      report "bad  perdeu"                             severity error;
-          wait for 9*clockPeriod;
-        -- Continue jogando até perder
-        elsif(pronto_out = '0' or perdeu_out = '0') then
+          assert notas_out = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
+          -- última jogada da última rodada -> ganhou!
+            assert ganhou_out   = '0'  report "bad ganhou"                          severity error;
+            assert perdeu_out   = '0'  report "bad perdeu"                          severity error;
+            wait for 9*clockPeriod;
+            botoes_in  <= "0000";
+            ativar_in   <= '0';
+            wait for 3*clockPeriod;
+            assert notas_out     = "0000"   report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
+            if(k = rodada - 1) then
+              assert ganhou_out   = '1'  report "bad ganhou"  severity error;
+              assert perdeu_out   = '0'  report "bad perdeu"  severity error;
+            else
+              assert ganhou_out   = '0' report "bad ganhou"   severity error;
+              assert perdeu_out   = '0' report "bad perdeu"   severity error;
+            end if;
+            wait for 9*clockPeriod;
+        end loop;
+      -- Demais rodadas -> escrita pós-jogada
+      else
+        for k in 0 to i + 1 loop 
           if(k = i + 1) then
             -- Modo multijogador -> jogador escreve a próxima jogada
             if(modo = 2) then
               botoes_in  <= tests(k);
               ativar_in   <= '1';
               wait for 3*clockPeriod;
-              assert leds_out     = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
+              assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
             -- Demais modos -> jogador ve a jogada, determinada pela FPGA, e imita ela
             else
-              wait for 1000*clockPeriod;
-              tests(k) <= leds_out;
               wait for 500*clockPeriod;
-              assert leds_out     = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
-              wait for 503*clockPeriod;
+              tests(k) <= notas_out;
+              wait for 250*clockPeriod;
+              assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
+              wait for 253*clockPeriod;
             end if;
           else
             botoes_in <= tests(k);
             ativar_in  <= '1';
             wait for 3*clockPeriod;
-            assert leds_out     = tests(k) report "bad led = " & integer'image(to_integer(unsigned(leds_out))) severity error;
+            assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
           end if;
-          assert pronto_out   = '0'      report "bad  pronto"                             severity error;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
           wait for 9*clockPeriod;
           botoes_in  <= "0000";
-          ativar_in  <= '0';
-          wait for clockPeriod;
-          assert pronto_out   = '0'      report "bad  pronto"                             severity error;
+          ativar_in   <= '0';
+          wait for 3*clockPeriod;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
           wait for 9*clockPeriod;
-        end if; 
-      end loop;
+        end loop;
+      end if;
     end loop;
 
     ---- final do testbench
@@ -230,6 +227,5 @@ begin
     
     wait; -- fim da simulação: processo aguarda indefinidamente
   end process;
-
 
 end architecture;
