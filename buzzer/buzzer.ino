@@ -8,7 +8,7 @@
 # define pinBuzzer D1   
 int nota  = 0; // Entrada Computada
 int notaAnterior = 0; // Entrada Anterior
-int tempoNota = 2000; // 2s por nota 
+int tempoNota = 1000; // 2s por nota 
 
 void setup()
 {
@@ -28,7 +28,7 @@ void loop() {
   
   // se for uma nota nova devemos tocá-la
   if(nota != notaAnterior){
-    // Escolher a nota musical (Escala Diatônica C-Major)
+    // Escolher a nota musical (Escala Diatônica C-Major) -> Uma oitava acima(*2)
     switch(nota){
     	case 1:  tone(pinBuzzer, 784*2, tempoNota); //G5
       			 delay(tempoNota);
