@@ -1,9 +1,9 @@
 
 // Pinos de Entrada
-#define nota0 D0
-#define nota1 D5
-#define nota2 D6
-#define nota3 D7
+#define nota0 D5
+#define nota1 D6
+#define nota2 D7
+#define nota3 D8
 // Pino do Buzzer
 # define pinBuzzer D1   
 int nota  = 0; // Entrada Computada
