@@ -86,6 +86,7 @@ architecture estrutural of fluxo_dados is
   signal s_not_escreve   : std_logic;
   signal pulso_out       : std_logic;
   signal reset_ed        : std_logic;
+  signal s_chaves        : std_logic_vector(3 downto 0);
   
   component contador_163
     port (
@@ -392,7 +393,13 @@ begin
   db_memoria      <= s_dado;
   jogada          <= pulso_out;
   modo            <= seletor_modo;
-  s_notas         <= s_dado when notaSel='1' else chaves;
+  s_notas         <= s_dado when notaSel='1' else s_chaves;
+
+  -- Mascarando chaves com ativar
+  s_chaves(0)     <= chaves(0) and ativar;
+  s_chaves(1)     <= chaves(1) and ativar;
+  s_chaves(2)     <= chaves(2) and ativar;
+  s_chaves(3)     <= chaves(3) and ativar;
 
   -- Impedir que notas falsas sejam tocadas pelo buzzer
   notas(0)        <= s_notas(0) and (not nao_tocar);

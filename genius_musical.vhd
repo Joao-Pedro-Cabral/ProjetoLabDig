@@ -57,7 +57,7 @@ architecture inicial of genius_musical is
             contaT                   : in  std_logic;
             zeraI                    : in  std_logic;
             contaI                   : in  std_logic;
-            nao_tocar                : in std_logic;
+            nao_tocar                : in  std_logic;
         --Saidas
             db_rodada                : out std_logic_vector(3 downto 0);
             db_jogada                : out std_logic_vector(3 downto 0);

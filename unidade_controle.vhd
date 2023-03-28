@@ -174,7 +174,7 @@ begin
                 '0' when others; 
 
     with Eatual select
-        nao_tocar   <= '1' when inicial | espera_dificuldade | registra_dificuldade | fim_ganhou | fim_perdeu | fim_timeout | registra_modo | espera_modo,
+        nao_tocar   <= '1' when inicial | espera_dificuldade | registra_dificuldade | fim_ganhou | fim_perdeu | fim_timeout | registra_modo | espera_modo | ultima_rodada | espera_mostra_jogada,
                        '0' when others;
             
 
