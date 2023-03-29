@@ -1,0 +1,30 @@
+
+from MQTT import *
+
+def main():
+    client = connect_mqtt()
+    client.loop_start()
+    publicar(client, "emqx2/Reset", "1")
+    time.sleep(3)
+    publicar(client, "emqx2/Reset", "0")
+    time.sleep(3)
+    publicar(client, "emqx2/Ativar", "1")
+    time.sleep(3)
+    print(ler_perdeu())
+    print(ler_ganhou())
+    print(ler_jogador())
+    publicar(client, "emqx2/Ativar", "0")
+    time.sleep(3)
+    publicar(client, "emqx2/Iniciar", "1")
+    time.sleep(3)
+    publicar(client, "emqx2/Iniciar", "0")
+    time.sleep(3)
+    publicar(client, "emqx2/Botoes", "0001")
+    time.sleep(3)
+    publicar(client, "emqx2/Botoes", "0000")
+    time.sleep(3)
+    publicar(client, "emqx2/Botoes", "1010")    
+    time.sleep(3)
+    publicar(client, "emqx2/Botoes", "0000")  
+
+main()
