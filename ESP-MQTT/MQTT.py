@@ -36,6 +36,7 @@ def publicar(client, topic, msg):
             time.sleep(0.02)
             publicar_msg(client, "emqx2/Ativar", "1")
         else:
+            print("Ativar 0")
             publicar_msg(client, "emqx2/Ativar", "0")
 
 def publicar_msg(client, topic, msg):
@@ -47,23 +48,23 @@ def publicar_msg(client, topic, msg):
 
 # Call back das mensagens
 def on_message(client, userdata, msg):
-    print("%s %s" % (msg.topic, msg.payload))
+    # print("%s %s" % (msg.topic, msg.payload))
     # 3 tipos de mensagens permitidas armazenadas em variáveis globais
     if(msg.topic == "emqx2/Perdeu"):
         global perdeu
         perdeu = str(msg.payload, "utf-8")
-        print("Perdeu recebido")
-        print(perdeu)
+        # print("Perdeu recebido")
+        # print(perdeu)
     elif(msg.topic == "emqx2/Ganhou"):
         global ganhou
         ganhou = str(msg.payload, "utf-8")
-        print("Ganhou recebido!")
-        print(ganhou)
+        # print("Ganhou recebido!")
+        # print(ganhou)
     elif(msg.topic == "emqx2/Jogador"):
         global jogador
         jogador = str(msg.payload, "utf-8")
-        print("Jogador recebido!")
-        print(jogador)
+        # print("Jogador recebido!")
+        # print(jogador)
     else:
         print("Topic não existe!")
 

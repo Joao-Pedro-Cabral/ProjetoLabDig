@@ -2,7 +2,7 @@
 from MQTT import *
 import pygame
 
-class Botoes:
+class Botao:
 
     def __init__(self, texto, x_pos, y_pos, topico, apertado, solto, client):
         self.texto    = texto
@@ -12,10 +12,9 @@ class Botoes:
         self.solto    = solto
         self.topico   = topico
         self.client   = client
-        self.desenhar()
 
     def desenhar(self, font, screen):
-        botao_texto = font
+        botao_texto = font.render(self.texto, True, "black")
         botao_retan = pygame.rect.Rect((self.x_pos, self.y_pos), (150, 25))
         pygame.draw.rect(screen, "gray", botao_retan, 0, 5)
         pygame.draw.rect(screen, "black", botao_retan, 2, 5)
@@ -30,3 +29,8 @@ class Botoes:
         else:
             return False
     
+    def publicar_apertado(self):
+        publicar(self.client, self.topico, self.apertado)
+
+    def publicar_solto(self):
+        publicar(self.client, self.topico, self.solto)
