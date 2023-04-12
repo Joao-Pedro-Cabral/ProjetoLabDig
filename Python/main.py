@@ -19,12 +19,15 @@ def main():
     while True:
         if(tela_inicio(font_padrao, font_titulo, fps, timer, client, 600, 600)):
             break
-        if(tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT)):
-            break
-        if(tela_dificuldade(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT)):
-            break
-        jogadores, terminar = tela_jogador(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT)
+        modo, terminar = tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT)
         if terminar:
+            break
+        jogadores = True
+        if(modo != 2): #Se for PvP não há necessidade de escolher o número de jogadores
+            jogadores, terminar = tela_jogador(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT)
+            if terminar:
+                break
+        if(tela_dificuldade(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT)):
             break
         if(tela_jogo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT, jogadores)):
             break
@@ -81,7 +84,7 @@ def tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
     terminar = False
     botao_Treino1   = Botao("Treino 1", 100, 225, "emqx2/Ativar", "1", "0", client)
     botao_Treino2   = Botao("Treino 2", 350, 225, "emqx2/Botoes", "0001", "0000", client)
-    botao_Multi     = Botao("Multijogador", 100, 275, "emqx2/Botoes", "0010", "0000", client)
+    botao_Multi     = Botao("PvP", 100, 275, "emqx2/Botoes", "0010", "0000", client)
     botao_Aleatorio = Botao("Aleatório", 350, 275, "emqx2/Botoes", "0011", "0000", client)
     screen.fill("white")
     titulo = font_titulo.render("Escolha o Modo de Jogo", True, "black", (250, 250, 250))
@@ -99,12 +102,16 @@ def tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
             apertado  = True
             if botao_Treino1.check_click():
                 botao_Treino1.publicar_apertado()
+                modo = 0
             elif botao_Treino2.check_click():
                 botao_Treino2.publicar_apertado()
+                modo = 1
             elif botao_Multi.check_click():
                 botao_Multi.publicar_apertado()
+                modo = 2
             elif botao_Aleatorio.check_click():
                 botao_Aleatorio.publicar_apertado()
+                modo = 3
             else:
                 apertado = False
         elif not pygame.mouse.get_pressed()[0] and not new_press:
@@ -120,7 +127,7 @@ def tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
         
         pygame.display.flip()
 
-    return terminar
+    return modo, terminar
 
 def tela_dificuldade(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
@@ -266,18 +273,18 @@ def tela_jogo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT, jogad
     terminar  = False
     reiniciar = False
     fim       = False
-    botao2    = Botao("C5",  25,  200, "emqx2/Botoes", "0001", "0000", client)
-    botao3    = Botao("D5",  225, 200, "emqx2/Botoes", "0010", "0000", client)
-    botao4    = Botao("E5",  425, 200, "emqx2/Botoes", "0011", "0000", client)
-    botao5    = Botao("F5",  25,  250, "emqx2/Botoes", "0100", "0000", client)
-    botao6    = Botao("G5",  225, 250, "emqx2/Botoes", "0101", "0000", client)
-    botao7    = Botao("A5",  425, 250, "emqx2/Botoes", "0110", "0000", client)
-    botao8    = Botao("B5",  25,  300, "emqx2/Botoes", "0111", "0000", client)
-    botao9    = Botao("C6",  225, 300, "emqx2/Botoes", "1000", "0000", client)
-    botao10   = Botao("D6",  425, 300, "emqx2/Botoes", "1001", "0000", client)
-    botao11   = Botao("E6",  25,  350, "emqx2/Botoes", "1010", "0000", client)
-    botao12   = Botao("F6",  225, 350, "emqx2/Botoes", "1011", "0000", client)
-    botao13   = Botao("G6",  425, 350, "emqx2/Botoes", "1100", "0000", client)
+    botao2    = Botao("C5",  25,  200, "emqx2/Botoes", "1100", "0000", client)
+    botao3    = Botao("D5",  225, 200, "emqx2/Botoes", "1011", "0000", client)
+    botao4    = Botao("E5",  425, 200, "emqx2/Botoes", "1010", "0000", client)
+    botao5    = Botao("F5",  25,  250, "emqx2/Botoes", "1001", "0000", client)
+    botao6    = Botao("G5",  225, 250, "emqx2/Botoes", "1000", "0000", client)
+    botao7    = Botao("A5",  425, 250, "emqx2/Botoes", "0111", "0000", client)
+    botao8    = Botao("B5",  25,  300, "emqx2/Botoes", "0110", "0000", client)
+    botao9    = Botao("C6",  225, 300, "emqx2/Botoes", "0101", "0000", client)
+    botao10   = Botao("D6",  425, 300, "emqx2/Botoes", "0100", "0000", client)
+    botao11   = Botao("E6",  25,  350, "emqx2/Botoes", "0011", "0000", client)
+    botao12   = Botao("F6",  225, 350, "emqx2/Botoes", "0010", "0000", client)
+    botao13   = Botao("G6",  425, 350, "emqx2/Botoes", "0001", "0000", client)
     botaoReiniciar  = Botao("Reiniciar", 400, 570, "emqx2/Iniciar", "1", "0", client)
     screen.fill("white")
     botao2.desenhar(font_padrao, screen)
@@ -348,7 +355,7 @@ def tela_jogo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT, jogad
             jogador = "1"
 
         if jogadores:
-            screen.blit(font_titulo.render("Jogador " + jogador, True, "black", (250, 250, 250)), (230, 100))
+            screen.blit(font_titulo.render("Jogador " + jogador, True, "black", (250, 250, 250)), (240, 100))
 
         if(ler_ganhou() == "1" or ler_perdeu() == "1"):
             if(ler_ganhou() == "1"):

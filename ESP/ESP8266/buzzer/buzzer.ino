@@ -8,7 +8,7 @@
 # define pinBuzzer D1   
 int nota  = 0; // Entrada Computada
 int notaAnterior = 0; // Entrada Anterior
-int tempoNota = 1000; // 2s por nota 
+int tempoNota = 800; // 800ms por nota 
 
 void setup()
 {

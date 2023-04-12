@@ -58,7 +58,7 @@ entity unidade_controle is
 end entity;
 
 architecture fsm of unidade_controle is
-    type t_estado is (inicial, espera_dificuldade, registra_dificuldade, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, espera_nova_jogada, mostra_jogada, espera_mostra_jogada, registra_modo, espera_modo);
+    type t_estado is (inicial, espera_dificuldade, registra_dificuldade, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, espera_nova_jogada, bora_mostra_jogada, mostra_jogada, espera_mostra_jogada, registra_modo, espera_modo);
     signal Eatual, Eprox: t_estado;
 begin
 
@@ -98,18 +98,19 @@ begin
 		espera_nova_jogada        when  Eatual=espera_nova_jogada and jogada = '0' else
 		escreve_jogada            when  Eatual=espera_nova_jogada and jogada = '1' else
         espera_mostra_jogada      when  Eatual=ultima_rodada and fimL='0' and (not (modo(0) = '0' and modo(1) = '1')) else
-        espera_mostra_jogada      when  Eatual=espera_mostra_jogada and ativar='1' else
-        mostra_jogada             when  Eatual=espera_mostra_jogada and ativar='0' else
+        espera_mostra_jogada      when  Eatual=espera_mostra_jogada and (ativar='1' or fimI = '0') else
+        bora_mostra_jogada        when  Eatual=espera_mostra_jogada and ativar='0' and fimI = '1' else
+        mostra_jogada             when  Eatual=bora_mostra_jogada else
         mostra_jogada             when  Eatual=mostra_jogada and fimI='0' else
 		proxima_rodada			  when  Eatual=escreve_jogada else
         proxima_rodada            when  Eatual=mostra_jogada and fimI='1' else   
         inicio_rodada             when  Eatual=proxima_rodada else
         fim_perdeu                when  Eatual=fim_perdeu and iniciar='0' else
-        espera_dificuldade        when  Eatual=fim_perdeu and iniciar='1' else
+        espera_modo               when  Eatual=fim_perdeu and iniciar='1' else
         fim_ganhou                when  Eatual=fim_ganhou and iniciar='0' else
-        espera_dificuldade        when  Eatual=fim_ganhou and iniciar='1' else
+        espera_modo               when  Eatual=fim_ganhou and iniciar='1' else
         fim_timeout               when  Eatual=fim_timeout and iniciar='0' else
-        espera_dificuldade        when  Eatual=fim_timeout and iniciar='1' else
+        espera_modo               when  Eatual=fim_timeout and iniciar='1' else
         inicial; 
 
     -- logica de saída (maquina de Moore)
@@ -162,7 +163,7 @@ begin
                         '0' when others;
 
     with Eatual select 
-        zeraI <= '1' when espera_mostra_jogada | registra_dificuldade,
+        zeraI <= '1' when bora_mostra_jogada | registra_dificuldade | ultima_rodada,
                 '0' when others; 
 
     with Eatual select 
@@ -174,7 +175,7 @@ begin
                 '0' when others; 
 
     with Eatual select
-        nao_tocar   <= '1' when inicial | espera_dificuldade | registra_dificuldade | fim_ganhou | fim_perdeu | fim_timeout | registra_modo | espera_modo | ultima_rodada | espera_mostra_jogada,
+        nao_tocar   <= '1' when inicial | espera_dificuldade | registra_dificuldade | fim_ganhou | fim_perdeu | fim_timeout | registra_modo | espera_modo | espera_mostra_jogada | ultima_rodada,
                        '0' when others;
             
 
@@ -200,6 +201,7 @@ begin
                      "10001" when registra_modo,        --11
                      "10010" when mostra_jogada,        --12
                      "10011" when espera_mostra_jogada, --13
+                     "10100" when bora_mostra_jogada, -- 14
                      "00000" when others;
 
 end architecture fsm;

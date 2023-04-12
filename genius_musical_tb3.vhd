@@ -67,7 +67,7 @@ architecture tb of genius_musical_tb3 is
 
   -- Configuração de jogo
   constant rodada        : natural := 11; -- Nível de dificuldade
-  constant modo          : natural := 3;
+  constant modo          : natural := 0;
   constant rodada_perder : natural := 1;
   constant jogada_perder : natural := 1;
 
@@ -184,9 +184,9 @@ begin
               assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
             -- Demais modos -> jogador ve a jogada, determinada pela FPGA, e imita ela
             else
-              wait for 500*clockPeriod;
+              wait for 1000*clockPeriod;
               tests(k) <= notas_out;
-              wait for 250*clockPeriod;
+              wait for 750*clockPeriod;
               assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
               wait for 253*clockPeriod;
             end if;

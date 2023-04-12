@@ -86,7 +86,7 @@ architecture estrutural of fluxo_dados is
   signal s_not_escreve   : std_logic;
   signal pulso_out       : std_logic;
   signal reset_ed        : std_logic;
-  signal s_chaves        : std_logic_vector(3 downto 0);
+  SIGNAL s_chaves        : std_logic_vector(3 downto 0);
   
   component contador_163
     port (
@@ -238,11 +238,11 @@ begin
           pseudo_random   => s_aleatorio
       );
   
-  --memoria: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
+  -- memoria: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
   memoria_multijogador: entity work.ram (ram_multijogador) -- usar arquitetura para ModelSim
-    -- generic map(
-      -- init_file => "ram_treino_1.mif" -- Quartus -> Será totalmente sobrescrita durante a partida
-    -- )
+    generic map(
+      init_file => "ram_treino_1.mif" -- Quartus -> Será totalmente sobrescrita durante a partida
+    )
     port map (
        clk          => clock,
        endereco     => s_endereco,
@@ -254,11 +254,11 @@ begin
 
   s_escrita <= s_aleatorio when (seletor_modo(0) or escreve_aleatorio) = '1' else s_jogada;
 
-  --memoria_treino_1: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
+  -- memoria_treino_1: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
   memoria_treino_1: entity work.ram (ram_treino_1) -- usar arquitetura para ModelSim
-    -- generic map(
-      -- init_file => "ram_treino_1.mif" -- Quartus
-    -- )
+    generic map(
+      init_file => "ram_treino_1.mif" -- Quartus
+    )
     port map (
        clk          => clock,
        endereco     => s_endereco,
@@ -270,9 +270,9 @@ begin
   
   --memoria_treino_2: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
   memoria_treino_2: entity work.ram (ram_treino_2) -- usar arquitetura para ModelSim
-    -- generic map(
-      -- init_file => "ram_treino_2.mif" -- Quartus
-    -- )
+    generic map(
+      init_file => "ram_treino_2.mif" -- Quartus
+    )
     port map (
        clk          => clock,
        endereco     => s_endereco,
@@ -310,7 +310,7 @@ begin
 
   temporizador: contador_m
     generic map (
-        M => 5000
+        M => 7500
     )
     port map (
       clock   => clock,
@@ -395,12 +395,11 @@ begin
   modo            <= seletor_modo;
   s_notas         <= s_dado when notaSel='1' else s_chaves;
 
-  -- Mascarando chaves com ativar
-  s_chaves(0)     <= chaves(0) and ativar;
-  s_chaves(1)     <= chaves(1) and ativar;
-  s_chaves(2)     <= chaves(2) and ativar;
-  s_chaves(3)     <= chaves(3) and ativar;
-
+  
+  s_chaves(0) <= chaves(0) and ativar;
+  s_chaves(1) <= chaves(1) and ativar;
+  s_chaves(2) <= chaves(2) and ativar;
+  s_chaves(3) <= chaves(3) and ativar;
   -- Impedir que notas falsas sejam tocadas pelo buzzer
   notas(0)        <= s_notas(0) and (not nao_tocar);
   notas(1)        <= s_notas(1) and (not nao_tocar);

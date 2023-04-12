@@ -67,7 +67,7 @@ architecture tb of genius_musical_tb is
 
   -- Configuração de jogo
   constant rodada : natural := 16; -- Nível de dificuldade
-  constant modo   : natural := 3;
+  constant modo   : natural := 2;
 
   -- Array de testes
   type   test_vector is array(0 to 15) of std_logic_vector(3 downto 0);
@@ -190,15 +190,15 @@ begin
           if(k = i + 1) then
             -- Modo multijogador -> jogador escreve a próxima jogada
             if(modo = 2) then
-              botoes_in  <= tests(k);
+              botoes_in   <= tests(k);
               ativar_in   <= '1';
               wait for 3*clockPeriod;
               assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
             -- Demais modos -> jogador ve a jogada, determinada pela FPGA, e imita ela
             else
-              wait for 500*clockPeriod;
+              wait for 1000*clockPeriod;
               tests(k) <= notas_out;
-              wait for 250*clockPeriod;
+              wait for 750*clockPeriod;
               assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
               wait for 253*clockPeriod;
             end if;

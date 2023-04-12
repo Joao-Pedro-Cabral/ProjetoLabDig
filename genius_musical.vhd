@@ -31,7 +31,12 @@ entity genius_musical is
         db_rodada                : out std_logic_vector(6 downto 0);
         db_contagem              : out std_logic_vector(6 downto 0);
         db_memoria               : out std_logic_vector(6 downto 0);
-        db_estado                : out std_logic_vector(6 downto 0)
+        db_estado                : out std_logic_vector(6 downto 0);
+		db_iniciar               : out std_logic;
+        db_reset                 : out std_logic;
+        db_ativar                : out std_logic;
+        db_botoes                : out std_logic_vector(3 downto 0);
+        db_modo                  : out std_logic_vector(1 downto 0)
     );
    end entity;
 
@@ -57,7 +62,7 @@ architecture inicial of genius_musical is
             contaT                   : in  std_logic;
             zeraI                    : in  std_logic;
             contaI                   : in  std_logic;
-            nao_tocar                : in  std_logic;
+            nao_tocar                : in std_logic;
         --Saidas
             db_rodada                : out std_logic_vector(3 downto 0);
             db_jogada                : out std_logic_vector(3 downto 0);
@@ -226,5 +231,11 @@ hex5: hexa7seg
         hexa => db_estado_s,
         sseg => db_estado
     );
+	 
+	db_iniciar <= iniciar;
+    db_reset   <= reset;
+    db_ativar  <= ativar;
+    db_botoes  <= botoes;
+    db_modo    <= modo;
 
 end architecture;

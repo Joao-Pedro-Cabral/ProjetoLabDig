@@ -50,6 +50,8 @@ begin
           "1000010" when hexa="10000" else
           "0001001" when hexa="10001" else
           "1001111" when hexa="10010" else 
+          "1100001" when hexa="10011" else
+          "0001010" when hexa="10100" else
           "1111111";
 
 end architecture comportamental;

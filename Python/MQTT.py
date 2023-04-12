@@ -33,7 +33,8 @@ def publicar(client, topic, msg):
     publicar_msg(client, topic, msg)
     if(topic == "emqx2/Botoes"):
         if(msg != "0000"):
-            time.sleep(0.02)
+            time.sleep(0.01)
+            print("Ativar 1")
             publicar_msg(client, "emqx2/Ativar", "1")
         else:
             print("Ativar 0")
