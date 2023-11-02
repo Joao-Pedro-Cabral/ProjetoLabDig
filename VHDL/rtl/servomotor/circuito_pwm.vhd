@@ -27,20 +27,16 @@ use ieee.numeric_std.all;
 
 entity circuito_pwm is
   generic (
-      conf_periodo : integer := 1250;
-      largura_000  : integer :=    0;
-      largura_001  : integer :=   50;
-      largura_010  : integer :=  500;
-      largura_011  : integer := 1000;
-      largura_100  : integer :=    0;
-      largura_101  : integer :=   50;
-      largura_110  : integer :=  500;
-      largura_111  : integer := 1000
+      conf_periodo : integer := 1250;  -- periodo do sinal pwm [1250 => f=4KHz (25us)]
+      largura_00   : integer :=    0;  -- largura do pulso p/ 00 [0 => 0]
+      largura_01   : integer :=   50;  -- largura do pulso p/ 01 [50 => 1us]
+      largura_10   : integer :=  500;  -- largura do pulso p/ 10 [500 => 10us]
+      largura_11   : integer := 1000   -- largura do pulso p/ 11 [1000 => 20us]
   );
   port (
       clock   : in  std_logic;
       reset   : in  std_logic;
-      largura : in  std_logic_vector(2 downto 0);  
+      largura : in  std_logic_vector(1 downto 0);  
       pwm     : out std_logic 
   );
 end entity circuito_pwm;
@@ -79,14 +75,10 @@ begin
 
   -- define largura do pulso em ciclos de clock
   with largura select 
-    s_largura <= largura_000 when "000",
-                 largura_001 when "001",
-                 largura_010 when "010",
-                 largura_011 when "011",
-                 largura_100 when "100",
-                 largura_101 when "101",
-                 largura_110 when "110",
-                 largura_111 when "111",
-                 largura_000 when others;
+    s_largura <= largura_00 when "00",
+                 largura_01 when "01",
+                 largura_10 when "10",
+                 largura_11 when "11",
+                 largura_00 when others;
 
 end architecture rtl;

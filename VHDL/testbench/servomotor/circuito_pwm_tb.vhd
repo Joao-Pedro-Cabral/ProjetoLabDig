@@ -24,20 +24,16 @@ architecture tb of circuito_pwm_tb is
   component circuito_pwm is
   generic (
       conf_periodo : integer;
-      largura_000  : integer;
-      largura_001  : integer;
-      largura_010  : integer;
-      largura_011  : integer;
-      largura_100  : integer;
-      largura_101  : integer;
-      largura_110  : integer;
-      largura_111  : integer
+      largura_00   : integer;
+      largura_01   : integer;
+      largura_10   : integer;
+      largura_11   : integer
   );
     port (
       clock   : in  std_logic;
       reset   : in  std_logic;
-      largura : in  std_logic_vector(2 downto 0);
-      pwm     : out std_logic
+      largura : in  std_logic_vector(1 downto 0);  
+      pwm     : out std_logic 
     );
   end component;
   
@@ -45,7 +41,7 @@ architecture tb of circuito_pwm_tb is
   --   valores iniciais para fins de simulacao (GHDL ou ModelSim)
   signal clock_in   : std_logic := '0';
   signal reset_in   : std_logic := '0';
-  signal largura_in : std_logic_vector (2 downto 0) := "000";
+  signal largura_in : std_logic_vector (1 downto 0) := "00";
   signal pwm_out    : std_logic := '0';
 
 
@@ -63,15 +59,11 @@ begin
   -- Conecta DUT (Device Under Test)
   DUT: circuito_pwm 
        generic map (
-           conf_periodo => 1250, -- valores default
-           largura_000  => 0,
-           largura_001  => 50,
-           largura_010  => 100,
-           largura_011  => 200,
-           largura_100  => 300,
-           largura_101  => 400,
-           largura_110  => 500,
-           largura_111  => 600
+          conf_periodo => 1000000,
+          largura_00   => 0,
+          largura_01   => 50000,
+          largura_10   => 75000,
+          largura_11   => 100000
        )
        port map( 
            clock   => clock_in,
@@ -94,36 +86,20 @@ begin
     wait for 2*clockPeriod;
 
     ---- casos de teste
-    -- posicao=000
-    largura_in <= "000";
+    -- posicao=00
+    largura_in <= "00"; -- sem pulso
     wait for 200 us;
 
-    -- posicao=001
-    largura_in <= "001";
+    -- posicao=01
+    largura_in <= "01"; -- largura de pulso de 1ms
     wait for 200 us;
 
-    -- posicao=010
-    largura_in <= "010";
+    -- posicao=10
+    largura_in <= "10"; -- largura de pulso de 1,5ms
     wait for 200 us;
 
-    -- posicao=011
-    largura_in <= "011";
-    wait for 200 us;
-
-    -- posicao=100
-    largura_in <= "100";
-    wait for 200 us;
-
-    -- posicao=101
-    largura_in <= "101";
-    wait for 200 us;
-
-    -- posicao=110
-    largura_in <= "110";
-    wait for 200 us;
-
-    -- posicao=111
-    largura_in <= "111";
+    -- posicao=11
+    largura_in <= "11"; -- largura de pulso de 2ms
     wait for 200 us;
 
     ---- final dos casos de teste  da simulacao

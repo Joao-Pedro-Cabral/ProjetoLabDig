@@ -4,7 +4,7 @@
 --------------------------------------------------------------------
 -- Descricao : fluxo de dados para Exp. 6
 --
---             
+--
 --
 -- 
 --------------------------------------------------------------------
@@ -36,6 +36,7 @@ entity fluxo_dados is
           zeraI                    : in  std_logic;
           zeraE                    : in  std_logic;
           zeraT                    : in  std_logic;
+          limpa                    : in  std_logic;
           limpaRC                  : in  std_logic;
           contaCR                  : in  std_logic;
           contaI                   : in  std_logic;
@@ -49,9 +50,11 @@ entity fluxo_dados is
           registraSel              : in  std_logic;
           configurar               : in  std_logic;
           notaSel                  : in  std_logic;
-          nao_tocar                : in  std_logic;
+          ganhou                   : in  std_logic;
+          perdeu                   : in  std_logic;
 --Saidas
           trigger                  : out std_logic;
+          pwm                      : out std_logic;
           notas                    : out std_logic_vector(3 downto 0);
           modo                     : out std_logic_vector(1 downto 0);
           enderecoIgualRodada      : out std_logic;
@@ -79,7 +82,6 @@ architecture estrutural of fluxo_dados is
   signal s_jogada        : std_logic_vector(3 downto 0);
   signal s_escrita       : std_logic_vector(3 downto 0);
   signal s_aleatorio     : std_logic_vector(3 downto 0);
-  signal s_notas         : std_logic_vector(3 downto 0);
   signal s_fimL          : std_logic_vector(15 downto 0);
   signal s_dado          : std_logic_vector(3 downto 0);
   signal s_dado_multi    : std_logic_vector(3 downto 0);
@@ -90,10 +92,10 @@ architecture estrutural of fluxo_dados is
   signal s_not_zeraE     : std_logic;
   signal s_not_escreve   : std_logic;
   signal configurado     : std_logic;
-  signal s_nota_medida   : std_logic_vector(3 downto 0);
   signal medida_bcd      : std_logic_vector(11 downto 0);
   signal medida_nota     : std_logic_vector(3 downto 0);
   signal pronto_sensor   : std_logic;
+  signal posicao_servo   : std_logic;
 
   component contador_163
     port (
@@ -208,6 +210,15 @@ component conversor_bcd_nota is
   );
 end component;
 
+component controle_servo is
+  port (
+    clock : in std_logic;
+    reset : in std_logic;
+    posicao : in std_logic_vector(1 downto 0);
+    controle : out std_logic
+  );
+end component controle_servo;
+
 begin
 
   -- sinais de controle ativos em alto
@@ -263,7 +274,7 @@ begin
   gerador_pseudo_aleatorio: LSFR_viciado
       port map(
           clock           => clock,
-          reset           => limpaRC,
+          reset           => limpa,
           pseudo_random   => s_aleatorio
       );
   
@@ -317,7 +328,7 @@ begin
   -- Seleção do s_dado
   s_dado <= s_dado_multi when seletor_modo(1) = '1' else s_dado_treino;
 
-  registrador_jogada: registrador_n 
+  registrador_jogada: registrador_n
     generic map(
       N => 4
     )
@@ -332,7 +343,7 @@ begin
   interface_sensor: interface_hcsr04
     port map (
       clock   => clock,
-      reset   => limpaRC,
+      reset   => limpa,
       medir   => medir_nota,
       echo    => echo,
       trigger => trigger,
@@ -349,7 +360,7 @@ begin
   ed_detector : edge_detector
     port map(
       clock => clock,
-      reset => limpaRC,
+      reset => limpa,
       sinal => ativar,
       pulso => configurado
     );
@@ -388,7 +399,7 @@ begin
     )
     port map(
       clock  => clock,
-      clear  => limpaRC,
+      clear  => limpa,
       enable => registraSel,
       D      => chaves,
       Q      => seletor_rodada
@@ -400,7 +411,7 @@ begin
     )
     port map(
       clock  => clock,
-      clear  => limpaRC,
+      clear  => limpa,
       enable => registraModo,
       D      => chaves(1 downto 0),
       Q      => seletor_modo
@@ -412,6 +423,19 @@ begin
       s => seletor_rodada,
       f => fimL
     );
+
+  pwm_servo: controle_servo
+    port map (
+      clock    => clock,
+      reset    => limpa,
+      posicao  => posicao_servo,
+      controle => pwm
+    );
+
+  -- Determinação da posição do servo
+  posicao_servo <= "11" when ganhou = '1' else
+                   "01" when perdeu = '1' else
+                   "00";
 
   -- Determinação dos possíveis fimL
   s_fimL(0)  <= s_rodada(0); -- Inatingível 
@@ -431,13 +455,9 @@ begin
   s_fimL(14) <= s_rodada(3) and s_rodada(2) and s_rodada(1);
   s_fimL(15) <= s_rodada(3) and s_rodada(2) and s_rodada(1) and s_rodada(0);
 
-  s_nota_medida(0) <= medida_nota(0); -- and ativar
-  s_nota_medida(1) <= medida_nota(1); -- and ativar
-  s_nota_medida(2) <= medida_nota(2); -- and ativar
-  s_nota_medida(3) <= medida_nota(3); -- and ativar
-  s_notas          <= s_dado when notaSel='1' else s_nota_medida;
-
   -- saidas
+  -- ESP
+  notas           <= s_dado when notaSel='1' else s_jogada;
   -- UC
   jogador         <= s_rodada(0);
   jogada          <= configurado when configurar = '1' else pronto_sensor;
@@ -448,11 +468,5 @@ begin
   db_contagem     <= s_endereco;
   db_memoria      <= s_dado;
   db_medida       <= medida_bcd;
-  -- ESP
-  -- Impedir que notas falsas sejam tocadas pelo buzzer
-  notas(0)        <= s_notas(0) and (not nao_tocar);
-  notas(1)        <= s_notas(1) and (not nao_tocar);
-  notas(2)        <= s_notas(2) and (not nao_tocar);
-  notas(3)        <= s_notas(3) and (not nao_tocar);
 
 end architecture estrutural;

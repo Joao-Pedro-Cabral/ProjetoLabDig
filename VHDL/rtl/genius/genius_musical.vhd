@@ -22,23 +22,21 @@ entity genius_musical is
         reset                    : in  std_logic;
         iniciar                  : in  std_logic;
         ativar                   : in  std_logic;
-        botoes                   : in  std_logic_vector(3 downto 0);
+        chaves                   : in  std_logic_vector(3 downto 0);
         echo                     : in  std_logic;
+        sel_db                   : in  std_logic;
         trigger                  : out std_logic;
+        pwm                      : out std_logic;
         notas                    : out std_logic_vector(3 downto 0);
         jogador                  : out std_logic;
         ganhou                   : out std_logic;
         perdeu                   : out std_logic;
-        medida0                  : out std_logic_vector(6 downto 0);
-        medida1                  : out std_logic_vector(6 downto 0);
-        medida2                  : out std_logic_vector(6 downto 0);
-        db_jogada                : out std_logic_vector(6 downto 0);
-        db_rodada                : out std_logic_vector(6 downto 0);
-        db_contagem              : out std_logic_vector(6 downto 0);
-        db_memoria               : out std_logic_vector(6 downto 0);
-        db_estado                : out std_logic_vector(6 downto 0);
-        db_ativar                : out std_logic;
-        db_botoes                : out std_logic_vector(3 downto 0);
+        db_hex0                  : out std_logic_vector(6 downto 0);
+        db_hex1                  : out std_logic_vector(6 downto 0);
+        db_hex2                  : out std_logic_vector(6 downto 0);
+        db_hex3                  : out std_logic_vector(6 downto 0);
+        db_hex4                  : out std_logic_vector(6 downto 0);
+        db_hex5                  : out std_logic_vector(6 downto 0);
         db_modo                  : out std_logic_vector(1 downto 0)
     );
    end entity;
@@ -55,6 +53,7 @@ architecture inicial of genius_musical is
             zeraI                    : in  std_logic;
             zeraE                    : in  std_logic;
             zeraT                    : in  std_logic;
+            limpa                    : in  std_logic;
             limpaRC                  : in  std_logic;
             contaCR                  : in  std_logic;
             contaI                   : in  std_logic;
@@ -68,9 +67,10 @@ architecture inicial of genius_musical is
             registraSel              : in  std_logic;
             configurar               : in  std_logic;
             notaSel                  : in  std_logic;
-            nao_tocar                : in  std_logic;
---Saidas
+            ganhou                   : in  std_logic;
+            perdeu                   : in  std_logic;
             trigger                  : out std_logic;
+            pwm                      : out std_logic;
             notas                    : out std_logic_vector(3 downto 0);
             modo                     : out std_logic_vector(1 downto 0);
             enderecoIgualRodada      : out std_logic;
@@ -89,7 +89,7 @@ architecture inicial of genius_musical is
         );
     end component;
 
-    component unidade_controle is 
+    component unidade_controle is
         port ( 
             clock                : in  std_logic;
             reset                : in  std_logic;
@@ -101,6 +101,7 @@ architecture inicial of genius_musical is
             fimL                 : in  std_logic;
             fimI                 : in  std_logic;
             timeout              : in  std_logic;
+            limpa                : out std_logic;
             limpaRC              : out std_logic;
             zeraCR               : out std_logic;
             zeraE                : out std_logic;
@@ -116,100 +117,113 @@ architecture inicial of genius_musical is
             registraSel          : out std_logic;
             registraModo         : out std_logic;
             notaSel              : out std_logic;
-            nao_tocar            : out std_logic;
             ganhou               : out std_logic;
             perdeu               : out std_logic;
             db_estado            : out std_logic_vector(4 downto 0)
         );
     end component;
 
-component hexa7seg is
+  component hexa7seg is
     port (
         hexa : in  std_logic_vector(4 downto 0);
         sseg : out std_logic_vector(6 downto 0)
     );
-end component;
+  end component;
 
-signal  db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
-signal  nao_tocar, zeraI, registraModo, notaSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  db_medida0_s, db_medida1_s, db_medida2_s, db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
+signal  db_medida0, db_medida1, db_medida2, db_estado, db_jogada, db_memoria, db_rodada, db_contagem : std_logic_vector(6 downto 0);
+signal  configurar, medir_nota, zeraI, limpa, registraModo, notaSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 signal  modo : std_logic_vector(1 downto 0);
+signal  db_medida_s: std_logic_vector(11 downto 0);
 
 begin
 
 UC : unidade_controle
-port map(
-        clock     => clock,
-        reset       => reset,
-        iniciar    => iniciar,
-        fimL      => fimL,
-        jogada        => jogada,
-        nao_tocar    => nao_tocar,
-        enderecoIgualRodada  => enderecoIgualRodada,
-        jogada_correta =>  jogada_correta,
-        timeout   => fimT,
-        zeraCR    => zeraCR,
-        contaCR    =>contaCR,
-        limpaRC    => limpaRC,
-        contaE     => contaE,
-        ativar     => ativar,
-        zeraE           => zeraE,
-        zeraT            => zeraT,
-        notaSel           => notaSel,
-        zeraI            => zeraI,
-        registraModo         => registraModo,
-        registraRC           => registraRC,
-        escreve_aleatorio    => escreve_aleatorio,
-        registraSel         => registraSel,
-        ganhou       => ganhou,
-        perdeu       => perdeu,
-        escreve     => escreve,
-        modo        => modo,
-        db_estado => db_estado_s,
-        fimI     => fimI
+  port map(
+    clock                => clock,
+    reset                => reset,
+    iniciar              => iniciar,
+    jogada               => jogada,
+    jogada_correta       =>  jogada_correta,
+    enderecoIgualRodada  => enderecoIgualRodada,
+    modo                 => modo,
+    fimL                 => fimL,
+    fimI                 => fimI,
+    timeout              => fimT,
+    limpa                => limpa,
+    limpaRC              => limpaRC,
+    zeraCR               => zeraCR,
+    zeraE                => zeraE,
+    zeraI                => zeraI,
+    zeraT                => zeraT,
+    contaCR              => contaCR,
+    contaE               => contaE,
+    configurar           => configurar,
+    medir_nota           => medir_nota,
+    registraRC           => registraRC,
+    escreve              => escreve,
+    escreve_aleatorio    => escreve_aleatorio,
+    registraSel          => registraSel,
+    registraModo         => registraModo,
+    notaSel              => notaSel,
+    ganhou               => ganhou,
+    perdeu               => perdeu,
+    db_estado            => db_estado_s
 ); 
 
 
 DF : fluxo_dados
-port map(
-    clock      => clock,
-    contaCR          => contaCR,
-    zeraCR         => zeraCR,
-    contaE           => contaE,
-    zeraE            => zeraE,
-    escreve           => escreve,
-    ativar    => ativar,
-    nao_tocar => nao_tocar,
-    chaves          => botoes,
-    registraRC        => registraRC,
-    limpaRC          => limpaRC,
-    zeraT            => zeraT,
-    contaT            => '1',
+  port map(
+    clock               => clock,
+    ativar              => ativar,
+    chaves              => chaves,
+    echo                => echo,
+    zeraCR              => zeraCR,
+    zeraI               => zeraI,
+    zeraE               => zeraE,
+    zeraT               => zeraT,
+    limpa               => limpa,
+    limpaRC             => limpaRC,
+    contaCR             => contaCR,
     contaI              => '1',
-    zeraI                => zeraI,
-    db_rodada               => db_rodada_s(3 downto 0),
-    enderecoIgualRodada      => enderecoIgualRodada,
-    db_contagem             => db_contagem_s(3 downto 0),
-    db_memoria             => db_memoria_s(3 downto 0),
-    db_jogada              => db_jogada_s(3 downto 0),
-    jogada_correta         =>jogada_correta, 
-    registraModo        => registraModo,
-    modo                => modo,
-    jogador             => jogador,
-    notas                => notas,
+    contaE              => contaE,
+    contaT              => '1',
+    medir_nota          => medir_nota,
+    escreve             => escreve,
     escreve_aleatorio   => escreve_aleatorio,
+    registraRC          => registraRC,
+    registraModo        => registraModo,
     registraSel         => registraSel,
-    notaSel              => notaSel,
+    configurar          => configurar,
+    notaSel             => notaSel,
+    ganhou              => ganhou,
+    perdeu              => perdeu,
+    trigger             => trigger,
+    pwm                 => pwm,
+    notas               => notas,
+    modo                => modo,
+    enderecoIgualRodada => enderecoIgualRodada,
+    jogada_correta      => jogada_correta,
     jogada              => jogada,
-    fimL                   => fimL,
-    fimE       => open,
-    fimT     => fimT,
-    fimI     => fimI
-);
+    jogador             => jogador,
+    fimL                => fimL,
+    fimE                => open,
+    fimT                => fimT,
+    fimI                => fimI,
+    db_rodada           => db_rodada_s(3 downto 0),
+    db_jogada           => db_jogada_s(3 downto 0),
+    db_contagem         => db_contagem_s(3 downto 0),
+    db_memoria          => db_memoria_s(3 downto 0),
+    db_medida           => db_medida_s
+  );
 
-db_jogada_s(4)   <= '0';
-db_memoria_s(4)  <= '0';
-db_contagem_s(4) <= '0';
-db_rodada_s(4)   <= '0'; 
+  db_jogada_s(4)   <= '0';
+  db_memoria_s(4)  <= '0';
+  db_contagem_s(4) <= '0';
+  db_rodada_s(4)   <= '0';
+  db_medida0_s     <= '0' & db_medida_s(3 downto 0);
+  db_medida1_s     <= '0' & db_medida_s(7 downto 4);
+  db_medida2_s     <= '0' & db_medida_s(11 downto 8);
 
 hex0: hexa7seg
     port map(
@@ -217,10 +231,28 @@ hex0: hexa7seg
         sseg => db_jogada
     );
 
+hex01: hexa7seg
+    port map(
+        hexa => db_medida0_s,
+        sseg => db_medida0
+    );
+
 hex1: hexa7seg
     port map(
         hexa => db_memoria_s,
         sseg => db_memoria
+    );
+
+hex11: hexa7seg
+    port map(
+        hexa => db_medida1_s,
+        sseg => db_medida1
+    );
+
+hex21: hexa7seg
+    port map(
+        hexa => db_medida2_s,
+        sseg => db_medida2
     );
 
 hex3: hexa7seg
@@ -241,8 +273,12 @@ hex5: hexa7seg
         sseg => db_estado
     );
 
-    db_ativar  <= ativar;
-    db_botoes  <= botoes;
-    db_modo    <= modo;
+  db_hex0    <= db_jogada  when db_sel = '0' else db_medida0;
+  db_hex1    <= db_memoria when db_sel = '0' else db_medida1;
+  db_hex2    <= db_medida2;
+  db_hex3    <= db_contagem;
+  db_hex4    <= db_rodada;
+  db_hex5    <= db_estado;
+  db_modo    <= modo;
 
 end architecture;

@@ -24,13 +24,10 @@ architecture tb of controle_servo_tb is
   -- Componente a ser testado (Device Under Test -- DUT)
   component controle_servo is
     port (
-      clock      : in  std_logic;
-      reset      : in  std_logic;
-      posicao    : in  std_logic_vector(2 downto 0);
-      pwm        : out std_logic;
-      db_reset   : out std_logic;
-      db_pwm     : out std_logic;
-      db_posicao : out std_logic_vector(2 downto 0)
+      clock     : in  std_logic;
+      reset     : in  std_logic;
+      posicao   : in  std_logic_vector(1 downto 0);
+      controle  : out std_logic
     );
   end component;
   
@@ -38,7 +35,7 @@ architecture tb of controle_servo_tb is
   --   valores iniciais para fins de simulacao (GHDL ou ModelSim)
   signal clock_in      : std_logic := '0';
   signal reset_in      : std_logic := '0';
-  signal posicao_in    : std_logic_vector (2 downto 0) := "000";
+  signal posicao_in    : std_logic_vector (1 downto 0) := "00";
   signal sinal_pwm_out : std_logic := '0';
 
 
@@ -55,13 +52,10 @@ begin
  
   -- Conecta DUT (Device Under Test)
   DUT: controle_servo port map( 
-         clock      => clock_in,
-         reset      => reset_in,
-         posicao    => posicao_in,
-         pwm   => sinal_pwm_out,
-         db_reset   => open,
-         db_pwm     => open,
-         db_posicao => open
+         clock     => clock_in,
+         reset     => reset_in,
+         posicao   => posicao_in,
+         controle  => sinal_pwm_out
       );
 
   -- geracao dos sinais de entrada (estimulos)
@@ -78,36 +72,20 @@ begin
     wait for 2*clockPeriod;
 
     ---- casos de teste
-    -- posicao=000
-    posicao_in <= "000";
+    -- posicao=00
+    posicao_in <= "00"; -- largura de pulso de 0V
     wait for 200 ms;
 
-    -- posicao=001
-    posicao_in <= "001";
+    -- posicao=01
+    posicao_in <= "01"; -- largura de pulso de 1ms
     wait for 200 ms;
 
-    -- posicao=010
-    posicao_in <= "010";
+    -- posicao=10
+    posicao_in <= "10"; -- largura de pulso de 1,5ms
     wait for 200 ms;
 
-    -- posicao=011
-    posicao_in <= "011";
-    wait for 200 ms;
-
-    -- posicao=100
-    posicao_in <= "100";
-    wait for 200 ms;
-
-    -- posicao=101
-    posicao_in <= "101";
-    wait for 200 ms;
-
-    -- posicao=110
-    posicao_in <= "110";
-    wait for 200 ms;
-
-    -- posicao=111
-    posicao_in <= "111";
+    -- posicao=11
+    posicao_in <= "11"; -- largura de pulso de 2ms
     wait for 200 ms;
 
     ---- final dos casos de teste  da simulacao

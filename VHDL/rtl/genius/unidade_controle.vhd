@@ -36,6 +36,7 @@ entity unidade_controle is
         fimL                 : in  std_logic;
         fimI                 : in  std_logic;
         timeout              : in  std_logic;
+        limpa                : out std_logic;
         limpaRC              : out std_logic;
         zeraCR               : out std_logic;
         zeraE                : out std_logic;
@@ -51,7 +52,6 @@ entity unidade_controle is
         registraSel          : out std_logic;
         registraModo         : out std_logic;
         notaSel              : out std_logic;
-        nao_tocar            : out std_logic;
         ganhou               : out std_logic;
         perdeu               : out std_logic;
         db_estado            : out std_logic_vector(4 downto 0)
@@ -121,7 +121,7 @@ begin
                        '0' when others;
     
     with Eatual select
-        limpaRC <=  '1' when inicial,
+        limpa   <=  '1' when inicial,
                     '0' when others;
                     
     with Eatual select
@@ -177,7 +177,7 @@ begin
                 '0' when others;
 
     with Eatual select
-        nao_tocar   <= '1' when inicial | espera_dificuldade | registra_dificuldade | fim_ganhou | fim_perdeu | fim_timeout | registra_modo | espera_modo | espera_mostra_jogada | ultima_rodada,
+        limpaRC   <= '1' when inicial | fim_ganhou | fim_perdeu | fim_timeout | espera_mostra_jogada | ultima_rodada,
                        '0' when others;
 
     with Eatual select
