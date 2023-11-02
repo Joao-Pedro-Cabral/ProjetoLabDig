@@ -46,7 +46,7 @@ entity unidade_controle is
         registraRC           : out std_logic;
         ganhou               : out std_logic;
         perdeu               : out std_logic;
-		escreve				 : out std_logic;
+        escreve              : out std_logic;
         registraSel          : out std_logic;
         registraModo         : out std_logic;
         escreve_aleatorio    : out std_logic;
@@ -95,14 +95,14 @@ begin
         espera_jogada             when  Eatual=proxima_jogada else
         espera_nova_jogada        when  Eatual=ultima_rodada and fimL = '0' and modo="10" else
         fim_ganhou                when  Eatual=ultima_rodada and fimL = '1' else
-		espera_nova_jogada        when  Eatual=espera_nova_jogada and jogada = '0' else
-		escreve_jogada            when  Eatual=espera_nova_jogada and jogada = '1' else
+        espera_nova_jogada        when  Eatual=espera_nova_jogada and jogada = '0' else
+        escreve_jogada            when  Eatual=espera_nova_jogada and jogada = '1' else
         espera_mostra_jogada      when  Eatual=ultima_rodada and fimL='0' and (not (modo(0) = '0' and modo(1) = '1')) else
         espera_mostra_jogada      when  Eatual=espera_mostra_jogada and (ativar='1' or fimI = '0') else
         bora_mostra_jogada        when  Eatual=espera_mostra_jogada and ativar='0' and fimI = '1' else
         mostra_jogada             when  Eatual=bora_mostra_jogada else
         mostra_jogada             when  Eatual=mostra_jogada and fimI='0' else
-		proxima_rodada			  when  Eatual=escreve_jogada else
+        proxima_rodada            when  Eatual=escreve_jogada else
         proxima_rodada            when  Eatual=mostra_jogada and fimI='1' else   
         inicio_rodada             when  Eatual=proxima_rodada else
         fim_perdeu                when  Eatual=fim_perdeu and iniciar='0' else
@@ -149,10 +149,10 @@ begin
     with Eatual select
         zeraT   <=  '1' when inicio_rodada | proxima_jogada,
                     '0' when others;
-					  
-	 with Eatual select
-		escreve <=  '1' when escreve_jogada | espera_mostra_jogada | registra_modo,
-					'0' when others;
+
+  with Eatual select
+        escreve <=  '1' when escreve_jogada | espera_mostra_jogada | registra_modo,
+                    '0' when others;
 
     with Eatual select
         registraSel    <=   '1' when registra_dificuldade,
@@ -189,8 +189,8 @@ begin
                      "00101" when compara_jogada,       -- 5
                      "00110" when proxima_jogada,       -- 6
                      "00111" when proxima_rodada,       -- 7
-					 "01000" when espera_nova_jogada,   -- 8
-					 "01001" when escreve_jogada,       -- 9
+                     "01000" when espera_nova_jogada,   -- 8
+                     "01001" when escreve_jogada,       -- 9
                      "01010" when espera_dificuldade,   -- A
                      "01011" when registra_dificuldade, -- B
                      "01100" when fim_ganhou,           -- C

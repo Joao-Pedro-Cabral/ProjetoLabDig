@@ -287,8 +287,8 @@ begin
 
   -- Seleção do s_dado
   s_dado <= s_dado_multi when seletor_modo(1) = '1' else s_dado_treino;
-  
-	registrador_jogada: registrador_n 
+
+  registrador_jogada: registrador_n 
     generic map(
       N => 4
     )
@@ -296,11 +296,11 @@ begin
         clock => clock,
         clear => limpaRC,
         enable => registraRC,
-        D =>  chaves,   
-        Q => s_jogada    
+        D =>  chaves,
+        Q => s_jogada
     );
-	 
-	ed_detector : edge_detector 
+
+  ed_detector : edge_detector
     port map(
       clock => clock,
       reset => reset_ed,
@@ -310,7 +310,7 @@ begin
 
   temporizador: contador_m
     generic map (
-        M => 7500
+        M => 375000000
     )
     port map (
       clock   => clock,
@@ -324,7 +324,7 @@ begin
 
   temporizador_inicial: contador_m
       generic map(
-        M => 1000
+        M => 50000000
       )
       port map(
         clock   => clock,

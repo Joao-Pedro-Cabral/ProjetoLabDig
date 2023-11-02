@@ -48,28 +48,31 @@ end entity contador_m;
 architecture comportamental of contador_m is
     signal IQ: integer range 0 to M-1;
 begin
-  
+
     process (clock,zera_as,zera_s,conta,IQ)
     begin
-        if zera_as='1' then    IQ <= 0;   
+        if zera_as='1' then    IQ <= 0;
         elsif rising_edge(clock) then
             if zera_s='1' then IQ <= 0;
-            elsif conta='1' then 
-                if IQ=M-1 then IQ <= 0; 
-                else           IQ <= IQ + 1; 
+            elsif conta='1' then
+                if IQ=M-1 then IQ <= 0;
+                else           IQ <= IQ + 1;
                 end if;
             else               IQ <= IQ;
             end if;
         end if;
+
+        -- fim de contagem
+        if IQ=M-1 then fim <= '1';
+        else fim <= '0';
+        end if;
+
+        -- meio da contagem
+        if IQ=M/2-1 then meio <= '1';
+        else meio <= '0';
+        end if;
+
     end process;
-
-    -- saida fim
-    fim <= '1' when IQ=M-1 else
-           '0';
-
-    -- saida meio
-    meio <= '1' when IQ=M/2-1 else
-            '0';
 
     -- saida Q
     Q <= std_logic_vector(to_unsigned(IQ, Q'length));

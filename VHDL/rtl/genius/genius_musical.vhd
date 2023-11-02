@@ -18,21 +18,21 @@ use ieee.std_logic_1164.all;
 
 entity genius_musical is
     port (
-        clock     : in  std_logic;
-        reset     : in  std_logic;
-        iniciar   : in  std_logic;
-        ativar    : in  std_logic;
-        botoes    : in  std_logic_vector(3 downto 0);
-        notas     : out std_logic_vector(3 downto 0);
-        jogador   : out std_logic;
-        ganhou    : out std_logic;
-        perdeu    : out std_logic;
+        clock                    : in  std_logic;
+        reset                    : in  std_logic;
+        iniciar                  : in  std_logic;
+        ativar                   : in  std_logic;
+        botoes                   : in  std_logic_vector(3 downto 0);
+        notas                    : out std_logic_vector(3 downto 0);
+        jogador                  : out std_logic;
+        ganhou                   : out std_logic;
+        perdeu                   : out std_logic;
         db_jogada                : out std_logic_vector(6 downto 0);
         db_rodada                : out std_logic_vector(6 downto 0);
         db_contagem              : out std_logic_vector(6 downto 0);
         db_memoria               : out std_logic_vector(6 downto 0);
         db_estado                : out std_logic_vector(6 downto 0);
-		db_iniciar               : out std_logic;
+        db_iniciar               : out std_logic;
         db_reset                 : out std_logic;
         db_ativar                : out std_logic;
         db_botoes                : out std_logic_vector(3 downto 0);
