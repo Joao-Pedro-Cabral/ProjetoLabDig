@@ -29,39 +29,44 @@ use ieee.math_real.all;
 entity fluxo_dados is
     port (
           clock                    : in  std_logic;
-          contaCR                  : in  std_logic;
-          zeraCR                   : in  std_logic;
-          contaE                   : in  std_logic;
-          zeraE                    : in  std_logic;
-          escreve                  : in  std_logic;
           ativar                   : in  std_logic;
           chaves                   : in  std_logic_vector(3 downto 0);
-          registraRC               : in  std_logic;
+          echo                     : in  std_logic;
+          zeraCR                   : in  std_logic;
+          zeraI                    : in  std_logic;
+          zeraE                    : in  std_logic;
+          zeraT                    : in  std_logic;
           limpaRC                  : in  std_logic;
+          contaCR                  : in  std_logic;
+          contaI                   : in  std_logic;
+          contaE                   : in  std_logic;
+          contaT                   : in  std_logic;
+          medir_nota               : in  std_logic;
+          escreve                  : in  std_logic;
+          escreve_aleatorio        : in  std_logic;
+          registraRC               : in  std_logic;
           registraModo             : in  std_logic;
           registraSel              : in  std_logic;
+          configurar               : in  std_logic;
           notaSel                  : in  std_logic;
-          escreve_aleatorio        : in  std_logic;
-          zeraT                    : in  std_logic;
-          contaT                   : in  std_logic;
-          zeraI                    : in  std_logic;
-          contaI                   : in  std_logic;
           nao_tocar                : in  std_logic;
 --Saidas
-          db_rodada                : out std_logic_vector(3 downto 0);
-          db_jogada                : out std_logic_vector(3 downto 0);
-          enderecoIgualRodada      : out std_logic;
+          trigger                  : out std_logic;
           notas                    : out std_logic_vector(3 downto 0);
-          db_contagem              : out std_logic_vector(3 downto 0);
-          db_memoria               : out std_logic_vector(3 downto 0);
           modo                     : out std_logic_vector(1 downto 0);
+          enderecoIgualRodada      : out std_logic;
           jogada_correta           : out std_logic;
           jogada                   : out std_logic;
           jogador                  : out std_logic;
           fimL                     : out std_logic;
           fimE                     : out std_logic;
           fimT                     : out std_logic;
-          fimI                     : out std_logic
+          fimI                     : out std_logic;
+          db_rodada                : out std_logic_vector(3 downto 0);
+          db_jogada                : out std_logic_vector(3 downto 0);
+          db_contagem              : out std_logic_vector(3 downto 0);
+          db_memoria               : out std_logic_vector(3 downto 0);
+          db_medida                : out std_logic_vector(11 downto 0)
     );
 end entity;
 
@@ -84,10 +89,12 @@ architecture estrutural of fluxo_dados is
   signal s_not_zeraCR    : std_logic;
   signal s_not_zeraE     : std_logic;
   signal s_not_escreve   : std_logic;
-  signal pulso_out       : std_logic;
-  signal reset_ed        : std_logic;
-  SIGNAL s_chaves        : std_logic_vector(3 downto 0);
-  
+  signal configurado     : std_logic;
+  signal s_nota_medida   : std_logic_vector(3 downto 0);
+  signal medida_bcd      : std_logic_vector(11 downto 0);
+  signal medida_nota     : std_logic_vector(3 downto 0);
+  signal pronto_sensor   : std_logic;
+
   component contador_163
     port (
         clock : in  std_logic;
@@ -179,6 +186,28 @@ component LSFR_viciado is
   );
 end component;
 
+component interface_hcsr04 is
+  port (
+      clock     : in std_logic;
+      reset     : in std_logic;
+      medir     : in std_logic;
+      echo      : in std_logic;
+      trigger   : out std_logic;
+      medida    : out std_logic_vector(11 downto 0); -- 3 digitos BCD
+      pronto    : out std_logic;
+      db_reset  : out std_logic;
+      db_medir  : out std_logic;
+      db_estado : out std_logic_vector(3 downto 0)
+  );
+end component interface_hcsr04;
+
+component conversor_bcd_nota is
+  port(
+    digitos_bcd : in  std_logic_vector(11 downto 0);
+    nota        : out std_logic_vector(3 downto 0)
+  );
+end component;
+
 begin
 
   -- sinais de controle ativos em alto
@@ -186,7 +215,7 @@ begin
   s_not_zeraCR   <= not zeraCR;
   s_not_zeraE    <= not zeraE;
   s_not_escreve  <= not escreve;
-  
+
   contador_rodada: contador_163
     port map (
       clock => clock,
@@ -293,19 +322,36 @@ begin
       N => 4
     )
     port map (
-        clock => clock,
-        clear => limpaRC,
+        clock  => clock,
+        clear  => limpaRC,
         enable => registraRC,
-        D =>  chaves,
-        Q => s_jogada
+        D      => medida_nota,
+        Q      => s_jogada
+    );
+
+  interface_sensor: interface_hcsr04
+    port map (
+      clock   => clock,
+      reset   => limpaRC,
+      medir   => medir_nota,
+      echo    => echo,
+      trigger => trigger,
+      medida  => medida_bcd,
+      pronto  => pronto_sensor
+    );
+
+  bcd_nota: conversor_bcd_nota
+    port map (
+      digitos_bcd => medida_bcd,
+      nota        => medida_nota
     );
 
   ed_detector : edge_detector
     port map(
       clock => clock,
-      reset => reset_ed,
+      reset => limpaRC,
       sinal => ativar,
-      pulso => pulso_out
+      pulso => configurado
     );
 
   temporizador: contador_m
@@ -384,26 +430,29 @@ begin
   s_fimL(13) <= s_rodada(3) and s_rodada(2) and s_rodada(0);
   s_fimL(14) <= s_rodada(3) and s_rodada(2) and s_rodada(1);
   s_fimL(15) <= s_rodada(3) and s_rodada(2) and s_rodada(1) and s_rodada(0);
-  
-  reset_ed        <= limpaRC;
-  db_rodada       <= s_rodada;
+
+  s_nota_medida(0) <= medida_nota(0); -- and ativar
+  s_nota_medida(1) <= medida_nota(1); -- and ativar
+  s_nota_medida(2) <= medida_nota(2); -- and ativar
+  s_nota_medida(3) <= medida_nota(3); -- and ativar
+  s_notas          <= s_dado when notaSel='1' else s_nota_medida;
+
+  -- saidas
+  -- UC
   jogador         <= s_rodada(0);
+  jogada          <= configurado when configurar = '1' else pronto_sensor;
+  modo            <= seletor_modo;
+  -- debug
+  db_rodada       <= s_rodada;
   db_jogada       <= s_jogada;
   db_contagem     <= s_endereco;
   db_memoria      <= s_dado;
-  jogada          <= pulso_out;
-  modo            <= seletor_modo;
-  s_notas         <= s_dado when notaSel='1' else s_chaves;
-
-  
-  s_chaves(0) <= chaves(0) and ativar;
-  s_chaves(1) <= chaves(1) and ativar;
-  s_chaves(2) <= chaves(2) and ativar;
-  s_chaves(3) <= chaves(3) and ativar;
+  db_medida       <= medida_bcd;
+  -- ESP
   -- Impedir que notas falsas sejam tocadas pelo buzzer
   notas(0)        <= s_notas(0) and (not nao_tocar);
   notas(1)        <= s_notas(1) and (not nao_tocar);
   notas(2)        <= s_notas(2) and (not nao_tocar);
   notas(3)        <= s_notas(3) and (not nao_tocar);
-  
+
 end architecture estrutural;

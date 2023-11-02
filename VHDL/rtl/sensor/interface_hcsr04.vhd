@@ -26,7 +26,9 @@ architecture structural of interface_hcsr04 is
         medir      : in  std_logic;
         echo       : in  std_logic;
         fim_medida : in  std_logic;
+        fimT       : in  std_logic;
         zera       : out std_logic;
+        contaT     : out std_logic;
         gera       : out std_logic;
         registra   : out std_logic;
         pronto     : out std_logic;
@@ -39,15 +41,17 @@ architecture structural of interface_hcsr04 is
       clock     : in  std_logic;
       pulso     : in  std_logic;
       zera      : in  std_logic;
+      contaT    : in  std_logic;
       registra  : in  std_logic;
       gera      : in  std_logic;
+      fimT      : out std_logic;
       trigger   : out std_logic;
       fim_medida: out std_logic;
       distancia : out std_logic_vector(11 downto 0)
     );
   end component;
 
-  signal zera, registra, gera, fim_medida: std_logic;
+  signal zera, registra, gera, fim_medida, contaT, fimT: std_logic;
 
   begin
 
@@ -60,6 +64,8 @@ architecture structural of interface_hcsr04 is
         fim_medida => fim_medida,
         zera => zera,
         gera => gera,
+        contaT => contaT,
+        fimT => fimT,
         registra => registra,
         pronto => pronto,
         db_estado => db_estado
@@ -71,6 +77,8 @@ architecture structural of interface_hcsr04 is
         pulso => echo,
         zera => zera,
         registra => registra,
+        contaT => contaT,
+        fimT => fimT,
         gera => gera,
         trigger => trigger,
         fim_medida => fim_medida,

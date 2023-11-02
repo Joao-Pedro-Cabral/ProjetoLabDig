@@ -7,8 +7,10 @@ entity interface_hcsr04_df is
     clock     : in  std_logic;
     pulso     : in  std_logic;
     zera      : in  std_logic;
+    contaT    : in  std_logic;
     registra  : in  std_logic;
     gera      : in  std_logic;
+    fimT      : out std_logic;
     trigger   : out std_logic;
     fim_medida: out std_logic;
     distancia : out std_logic_vector(11 downto 0)
@@ -60,6 +62,21 @@ architecture structural of interface_hcsr04_df is
     );
   end component;
 
+  component contador_m is
+    generic (
+        constant M: integer := 100 -- modulo do contador
+    );
+    port (
+        clock   : in  std_logic;
+        zera_as : in  std_logic;
+        zera_s  : in  std_logic;
+        conta   : in  std_logic;
+        Q       : out std_logic_vector(natural(ceil(log2(real(M))))-1 downto 0);
+        fim     : out std_logic;
+        meio    : out std_logic
+    );
+  end component contador_m;
+
   signal digito0, digito1, digito2 : std_logic_vector(3 downto 0);
   signal digitos: std_logic_vector(11 downto 0);
 
@@ -103,6 +120,20 @@ begin
       enable  => registra,
       D       => digitos,
       Q       => distancia
+    );
+
+  temporizador_timeout: contador_m
+    generic map(
+      M => 50000000 -- 1s
+    )
+    port map(
+      clock   => clock,
+      zera_as => '0',
+      zera_s  => zera,
+      conta   => contaT,
+      Q       => open,
+      fim     => fimT,
+      meio    => open
     );
 
   digitos <= digito2 & digito1 & digito0;

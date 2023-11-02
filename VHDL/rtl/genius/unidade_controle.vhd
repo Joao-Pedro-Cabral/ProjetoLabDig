@@ -26,39 +26,40 @@ use ieee.std_logic_1164.all;
 
 entity unidade_controle is 
     port ( 
-        clock                : in  std_logic; 
-        reset                : in  std_logic; 
+        clock                : in  std_logic;
+        reset                : in  std_logic;
         iniciar              : in  std_logic;
+        jogada               : in  std_logic;
+        jogada_correta       : in  std_logic;
+        enderecoIgualRodada  : in  std_logic;
+        modo                 : in  std_logic_vector(1 downto 0);
         fimL                 : in  std_logic;
         fimI                 : in  std_logic;
-        jogada               : in  std_logic;
-        ativar               : in  std_logic;
-        enderecoIgualRodada  : in  std_logic;
-        jogada_correta       : in  std_logic;
-        modo                 : in  std_logic_vector(1 downto 0);
         timeout              : in  std_logic;
-        zeraCR               : out std_logic;
-        contaCR              : out std_logic;
         limpaRC              : out std_logic;
-        contaE               : out std_logic;
+        zeraCR               : out std_logic;
         zeraE                : out std_logic;
+        zeraI                : out std_logic;
         zeraT                : out std_logic;
+        contaCR              : out std_logic;
+        contaE               : out std_logic;
+        configurar           : out std_logic;
+        medir_nota           : out std_logic;
         registraRC           : out std_logic;
-        ganhou               : out std_logic;
-        perdeu               : out std_logic;
         escreve              : out std_logic;
+        escreve_aleatorio    : out std_logic;
         registraSel          : out std_logic;
         registraModo         : out std_logic;
-        escreve_aleatorio    : out std_logic;
-        zeraI                : out std_logic;
         notaSel              : out std_logic;
         nao_tocar            : out std_logic;
+        ganhou               : out std_logic;
+        perdeu               : out std_logic;
         db_estado            : out std_logic_vector(4 downto 0)
     );
 end entity;
 
 architecture fsm of unidade_controle is
-    type t_estado is (inicial, espera_dificuldade, registra_dificuldade, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, espera_nova_jogada, bora_mostra_jogada, mostra_jogada, espera_mostra_jogada, registra_modo, espera_modo);
+    type t_estado is (inicial, espera_dificuldade, registra_dificuldade, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, espera_nova_jogada, inicia_mostra_jogada, mostra_jogada, espera_mostra_jogada, registra_modo, espera_modo);
     signal Eatual, Eprox: t_estado;
 begin
 
@@ -93,22 +94,23 @@ begin
         ultima_rodada             when  Eatual=compara_jogada and (enderecoIgualRodada='1' and jogada_correta = '1') else
         fim_perdeu                when  Eatual=compara_jogada and jogada_correta = '0' else
         espera_jogada             when  Eatual=proxima_jogada else
-        espera_nova_jogada        when  Eatual=ultima_rodada and fimL = '0' and modo="10" else
         fim_ganhou                when  Eatual=ultima_rodada and fimL = '1' else
+        espera_nova_jogada        when  Eatual=ultima_rodada and fimL = '0' and modo="10" else
+        espera_mostra_jogada      when  Eatual=ultima_rodada and fimL = '0' and (not (modo(0) = '0' and modo(1) = '1')) else
         espera_nova_jogada        when  Eatual=espera_nova_jogada and jogada = '0' else
         escreve_jogada            when  Eatual=espera_nova_jogada and jogada = '1' else
-        espera_mostra_jogada      when  Eatual=ultima_rodada and fimL='0' and (not (modo(0) = '0' and modo(1) = '1')) else
-        espera_mostra_jogada      when  Eatual=espera_mostra_jogada and (ativar='1' or fimI = '0') else
-        bora_mostra_jogada        when  Eatual=espera_mostra_jogada and ativar='0' and fimI = '1' else
-        mostra_jogada             when  Eatual=bora_mostra_jogada else
+        -- antes tinha o inicia_mostra_jogada
+        espera_mostra_jogada      when  Eatual=espera_mostra_jogada and fimI = '0' else
+        inicia_mostra_jogada      when  Eatual=espera_mostra_jogada and fimI = '1' else
+        mostra_jogada             when  Eatual=inicia_mostra_jogada else
         mostra_jogada             when  Eatual=mostra_jogada and fimI='0' else
+        proxima_rodada            when  Eatual=mostra_jogada and fimI='1' else
         proxima_rodada            when  Eatual=escreve_jogada else
-        proxima_rodada            when  Eatual=mostra_jogada and fimI='1' else   
         inicio_rodada             when  Eatual=proxima_rodada else
-        fim_perdeu                when  Eatual=fim_perdeu and iniciar='0' else
-        espera_modo               when  Eatual=fim_perdeu and iniciar='1' else
-        fim_ganhou                when  Eatual=fim_ganhou and iniciar='0' else
-        espera_modo               when  Eatual=fim_ganhou and iniciar='1' else
+        fim_perdeu                when  Eatual=fim_perdeu  and iniciar='0' else
+        espera_modo               when  Eatual=fim_perdeu  and iniciar='1' else
+        fim_ganhou                when  Eatual=fim_ganhou  and iniciar='0' else
+        espera_modo               when  Eatual=fim_ganhou  and iniciar='1' else
         fim_timeout               when  Eatual=fim_timeout and iniciar='0' else
         espera_modo               when  Eatual=fim_timeout and iniciar='1' else
         inicial; 
@@ -163,21 +165,28 @@ begin
                         '0' when others;
 
     with Eatual select 
-        zeraI <= '1' when bora_mostra_jogada | registra_dificuldade | ultima_rodada,
-                '0' when others; 
+        zeraI <= '1' when inicia_mostra_jogada | registra_dificuldade | ultima_rodada,
+                 '0' when others;
 
     with Eatual select 
         registraModo <= '1' when registra_modo,
-                '0' when others; 
+                '0' when others;
 
     with Eatual select 
         escreve_aleatorio <= '1' when registra_modo,
-                '0' when others; 
+                '0' when others;
 
     with Eatual select
         nao_tocar   <= '1' when inicial | espera_dificuldade | registra_dificuldade | fim_ganhou | fim_perdeu | fim_timeout | registra_modo | espera_modo | espera_mostra_jogada | ultima_rodada,
                        '0' when others;
-            
+
+    with Eatual select
+        medir_nota <= '1' when inicio_rodada,
+                      '0' when others;
+
+    with Eatual select
+        configurar <= '1' when espera_modo | espera_dificuldade,
+                      '0' when others;
 
     -- saida de depuracao (db_estado)
     with Eatual select
@@ -197,11 +206,11 @@ begin
                      "01101" when fim_perdeu,           -- D
                      "01110" when fim_timeout,          -- E
                      "01111" when espera_jogada,        -- F
-                     "10000" when espera_modo,          --10 
+                     "10000" when espera_modo,          --10
                      "10001" when registra_modo,        --11
                      "10010" when mostra_jogada,        --12
                      "10011" when espera_mostra_jogada, --13
-                     "10100" when bora_mostra_jogada, -- 14
+                     "10100" when inicia_mostra_jogada, --14
                      "00000" when others;
 
 end architecture fsm;

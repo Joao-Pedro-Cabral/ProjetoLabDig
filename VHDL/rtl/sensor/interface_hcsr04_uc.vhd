@@ -24,7 +24,9 @@ entity interface_hcsr04_uc is
         medir      : in  std_logic;
         echo       : in  std_logic;
         fim_medida : in  std_logic;
+        fimT       : in  std_logic;
         zera       : out std_logic;
+        contaT     : out std_logic;
         gera       : out std_logic;
         registra   : out std_logic;
         pronto     : out std_logic;
@@ -57,8 +59,9 @@ begin
                                 end if;
         when preparacao =>      Eprox <= envia_trigger;
         when envia_trigger =>   Eprox <= espera_echo;
-        when espera_echo =>     if echo='0' then Eprox <= espera_echo;
-                                else             Eprox <= medida;
+        when espera_echo =>     if echo='1'      then Eprox <= medida;
+                                elsif fimT = '1' then Eprox <= preparacao;
+                                else                  Eprox <= espera_echo;
                                 end if;
         when medida =>          if fim_medida='1' then Eprox <= armazenamento;
                                 else                   Eprox <= medida;
@@ -79,6 +82,8 @@ begin
       registra <= '1' when armazenamento, '0' when others;
   with Eatual select
       pronto <= '1' when final, '0' when others;
+  with Eatual select
+      contaT <= '1' when espera_echo, '0' when others;
 
   with Eatual select
       db_estado <= "0000" when inicial, 
