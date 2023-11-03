@@ -71,7 +71,7 @@ architecture tb of genius_musical_tb is
 
   -- Configuração de jogo
   constant rodada : natural := 3; -- Nível de dificuldade
-  constant modo   : natural := 0;
+  constant modo   : natural := 3;
 
   -- Função para calcular a largura do echo
   function EchoLen(nota: std_logic_vector(3 downto 0) := "0000") return time is
@@ -193,6 +193,7 @@ begin
           if(k = rodada - 1) then
             assert ganhou_out   = '1'  report "bad ganhou"  severity error;
             assert perdeu_out   = '0'  report "bad perdeu"  severity error;
+            wait for 5000*clockPeriod;
           else
             assert ganhou_out   = '0' report "bad ganhou"   severity error;
             assert perdeu_out   = '0' report "bad perdeu"   severity error;

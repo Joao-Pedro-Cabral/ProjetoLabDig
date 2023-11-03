@@ -71,7 +71,7 @@ architecture tb of genius_musical_tb2 is
 
   -- Configuração de jogo
   constant rodada        : natural := 11; -- Nível de dificuldade
-  constant modo          : natural := 0;
+  constant modo          : natural := 1;
   constant rodada_perder : natural := 5;
   constant jogada_perder : natural := 4;
 
@@ -195,7 +195,7 @@ begin
           wait for 15*clockPeriod;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '1'      report "bad  perdeu"                             severity error;
-          wait for 9*clockPeriod;
+          wait for 5000*clockPeriod;
         -- Continue jogando até perder
         elsif(perdeu_out = '0') then
           if(k = i + 1) then

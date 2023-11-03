@@ -184,6 +184,7 @@ begin
           wait for 800000*clockPeriod;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '1'      report "bad  perdeu"                             severity error;
+          wait for 5000*clockPeriod;
         -- Continua jogando até perder
         elsif(perdeu_out = '0') then
           if(k = i + 1) then
