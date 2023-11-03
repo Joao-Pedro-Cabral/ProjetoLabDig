@@ -27,7 +27,7 @@ entity genius_musical is
         sel_db                   : in  std_logic;
         trigger                  : out std_logic;
         pwm                      : out std_logic;
-        notas                    : out std_logic_vector(3 downto 0);
+        notas                    : out std_logic_vector(3 downto 0); -- simulacao
         jogador                  : out std_logic;
         ganhou                   : out std_logic;
         perdeu                   : out std_logic;
@@ -128,8 +128,8 @@ architecture inicial of genius_musical is
     );
   end component;
 
-signal  db_medida0_s, db_medida1_s, db_medida2_s, db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
-signal  db_medida0, db_medida1, db_medida2, db_estado, db_jogada, db_memoria, db_rodada, db_contagem : std_logic_vector(6 downto 0);
+signal  db_notas_s, db_medida0_s, db_medida1_s, db_medida2_s, db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
+signal  db_notas, db_medida0, db_medida1, db_medida2, db_estado, db_jogada, db_memoria, db_rodada, db_contagem : std_logic_vector(6 downto 0);
 signal  s_ganhou, s_perdeu, configurar, medir_nota, zeraI, limpa, registraModo, notaSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 signal  modo : std_logic_vector(1 downto 0);
 signal  db_medida_s: std_logic_vector(11 downto 0);
@@ -196,7 +196,8 @@ DF : fluxo_dados
     perdeu              => s_perdeu,
     trigger             => trigger,
     pwm                 => pwm,
-    notas               => notas,
+    notas               => notas, -- simulacao
+    -- notas               => db_notas_s(3 downto 0), -- quartus
     modo                => modo,
     enderecoIgualRodada => enderecoIgualRodada,
     jogada_correta      => jogada_correta,
@@ -221,6 +222,8 @@ DF : fluxo_dados
   db_memoria_s(4)  <= '0';
   db_contagem_s(4) <= '0';
   db_rodada_s(4)   <= '0';
+  db_notas_s(4)    <= '0';
+  db_notas_s(3 downto 0) <= "0000"; -- simulacao 
   db_medida0_s     <= '0' & db_medida_s(3 downto 0);
   db_medida1_s     <= '0' & db_medida_s(7 downto 4);
   db_medida2_s     <= '0' & db_medida_s(11 downto 8);
@@ -249,6 +252,13 @@ hex11: hexa7seg
         sseg => db_medida1
     );
 
+
+hex2: hexa7seg
+    port map(
+        hexa => db_notas_s,
+        sseg => db_notas
+    );
+
 hex21: hexa7seg
     port map(
         hexa => db_medida2_s,
@@ -275,7 +285,7 @@ hex5: hexa7seg
 
   db_hex0    <= db_jogada  when sel_db = '0' else db_medida0;
   db_hex1    <= db_memoria when sel_db = '0' else db_medida1;
-  db_hex2    <= db_medida2;
+  db_hex2    <= db_notas   when sel_db = '0' else db_medida2;
   db_hex3    <= db_contagem;
   db_hex4    <= db_rodada;
   db_hex5    <= db_estado;

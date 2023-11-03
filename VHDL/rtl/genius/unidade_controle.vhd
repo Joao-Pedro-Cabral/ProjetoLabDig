@@ -153,7 +153,7 @@ begin
                     '0' when others;
 
   with Eatual select
-        escreve <=  '1' when escreve_jogada | espera_mostra_jogada | registra_modo,
+        escreve <=  '1' when escreve_jogada | inicia_mostra_jogada | registra_modo,
                     '0' when others;
 
     with Eatual select

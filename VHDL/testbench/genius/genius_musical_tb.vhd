@@ -70,8 +70,8 @@ architecture tb of genius_musical_tb is
   constant clockPeriod : time := 20 ns;     -- frequencia 100MHz
 
   -- Configuração de jogo
-  constant rodada : natural := 8; -- Nível de dificuldade
-  constant modo   : natural := 2;
+  constant rodada : natural := 3; -- Nível de dificuldade
+  constant modo   : natural := 0;
 
   -- Função para calcular a largura do echo
   function EchoLen(nota: std_logic_vector(3 downto 0) := "0000") return time is
