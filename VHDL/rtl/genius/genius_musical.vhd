@@ -54,7 +54,6 @@ architecture inicial of genius_musical is
             zeraE                    : in  std_logic;
             zeraT                    : in  std_logic;
             limpa                    : in  std_logic;
-            limpaRC                  : in  std_logic;
             contaCR                  : in  std_logic;
             contaI                   : in  std_logic;
             contaE                   : in  std_logic;
@@ -102,7 +101,6 @@ architecture inicial of genius_musical is
             fimI                 : in  std_logic;
             timeout              : in  std_logic;
             limpa                : out std_logic;
-            limpaRC              : out std_logic;
             zeraCR               : out std_logic;
             zeraE                : out std_logic;
             zeraI                : out std_logic;
@@ -132,7 +130,7 @@ architecture inicial of genius_musical is
 
 signal  db_medida0_s, db_medida1_s, db_medida2_s, db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
 signal  db_medida0, db_medida1, db_medida2, db_estado, db_jogada, db_memoria, db_rodada, db_contagem : std_logic_vector(6 downto 0);
-signal  configurar, medir_nota, zeraI, limpa, registraModo, notaSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, limpaRC, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  s_ganhou, s_perdeu, configurar, medir_nota, zeraI, limpa, registraModo, notaSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 signal  modo : std_logic_vector(1 downto 0);
 signal  db_medida_s: std_logic_vector(11 downto 0);
 
@@ -151,7 +149,6 @@ UC : unidade_controle
     fimI                 => fimI,
     timeout              => fimT,
     limpa                => limpa,
-    limpaRC              => limpaRC,
     zeraCR               => zeraCR,
     zeraE                => zeraE,
     zeraI                => zeraI,
@@ -166,8 +163,8 @@ UC : unidade_controle
     registraSel          => registraSel,
     registraModo         => registraModo,
     notaSel              => notaSel,
-    ganhou               => ganhou,
-    perdeu               => perdeu,
+    ganhou               => s_ganhou,
+    perdeu               => s_perdeu,
     db_estado            => db_estado_s
 ); 
 
@@ -183,7 +180,6 @@ DF : fluxo_dados
     zeraE               => zeraE,
     zeraT               => zeraT,
     limpa               => limpa,
-    limpaRC             => limpaRC,
     contaCR             => contaCR,
     contaI              => '1',
     contaE              => contaE,
@@ -196,8 +192,8 @@ DF : fluxo_dados
     registraSel         => registraSel,
     configurar          => configurar,
     notaSel             => notaSel,
-    ganhou              => ganhou,
-    perdeu              => perdeu,
+    ganhou              => s_ganhou,
+    perdeu              => s_perdeu,
     trigger             => trigger,
     pwm                 => pwm,
     notas               => notas,
@@ -217,6 +213,10 @@ DF : fluxo_dados
     db_medida           => db_medida_s
   );
 
+  ganhou <= s_ganhou;
+  perdeu <= s_perdeu;
+
+  -- debug
   db_jogada_s(4)   <= '0';
   db_memoria_s(4)  <= '0';
   db_contagem_s(4) <= '0';
@@ -273,8 +273,8 @@ hex5: hexa7seg
         sseg => db_estado
     );
 
-  db_hex0    <= db_jogada  when db_sel = '0' else db_medida0;
-  db_hex1    <= db_memoria when db_sel = '0' else db_medida1;
+  db_hex0    <= db_jogada  when sel_db = '0' else db_medida0;
+  db_hex1    <= db_memoria when sel_db = '0' else db_medida1;
   db_hex2    <= db_medida2;
   db_hex3    <= db_contagem;
   db_hex4    <= db_rodada;

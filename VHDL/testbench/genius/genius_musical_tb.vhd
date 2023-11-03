@@ -26,20 +26,26 @@ architecture tb of genius_musical_tb is
   -- Componente a ser testado (Device Under Test -- DUT)
   component genius_musical is
     port (
-      clock     : in  std_logic;
-      reset     : in  std_logic;
-      iniciar   : in  std_logic;
-      ativar    : in  std_logic;
-      botoes    : in  std_logic_vector(3 downto 0);
-      notas     : out std_logic_vector(3 downto 0);
-      jogador   : out std_logic;
-      ganhou    : out std_logic;
-      perdeu    : out std_logic;
-      db_jogada                : out std_logic_vector(6 downto 0);
-      db_rodada                : out std_logic_vector(6 downto 0);
-      db_contagem              : out std_logic_vector(6 downto 0);
-      db_memoria               : out std_logic_vector(6 downto 0);
-      db_estado                : out std_logic_vector(6 downto 0)
+      clock                    : in  std_logic;
+      reset                    : in  std_logic;
+      iniciar                  : in  std_logic;
+      ativar                   : in  std_logic;
+      chaves                   : in  std_logic_vector(3 downto 0);
+      echo                     : in  std_logic;
+      sel_db                   : in  std_logic;
+      trigger                  : out std_logic;
+      pwm                      : out std_logic;
+      notas                    : out std_logic_vector(3 downto 0);
+      jogador                  : out std_logic;
+      ganhou                   : out std_logic;
+      perdeu                   : out std_logic;
+      db_hex0                  : out std_logic_vector(6 downto 0);
+      db_hex1                  : out std_logic_vector(6 downto 0);
+      db_hex2                  : out std_logic_vector(6 downto 0);
+      db_hex3                  : out std_logic_vector(6 downto 0);
+      db_hex4                  : out std_logic_vector(6 downto 0);
+      db_hex5                  : out std_logic_vector(6 downto 0);
+      db_modo                  : out std_logic_vector(1 downto 0)
     );
   end component;
   
@@ -47,48 +53,53 @@ architecture tb of genius_musical_tb is
   signal clk_in     : std_logic := '0';
   signal rst_in     : std_logic := '0';
   signal iniciar_in : std_logic := '0';
-  signal botoes_in  : std_logic_vector(3 downto 0) := "0000";
   signal ativar_in  : std_logic := '0';
+  signal chaves_in  : std_logic_vector(3 downto 0) := "0000";
+  signal echo_in    : std_logic := '0';
 
   ---- Declaracao dos sinais de saida
+  signal trigger_out    : std_logic := '0';
+  signal pwm_out        : std_logic := '0';
+  signal notas_out      : std_logic_vector(3 downto 0) := "0000";
+  signal jogador_out    : std_logic := '0';
   signal ganhou_out     : std_logic := '0';
   signal perdeu_out     : std_logic := '0';
-  signal jogador_out    : std_logic := '0';
-  signal notas_out      : std_logic_vector(3 downto 0);
-  signal contagem_out   : std_logic_vector(6 downto 0) := "0000000";
-  signal memoria_out    : std_logic_vector(6 downto 0);
-  signal jogada_out     : std_logic_vector(6 downto 0);
-  signal estado_out     : std_logic_vector(6 downto 0) := "0000000";
-  signal rodada_out     : std_logic_vector(6 downto 0);
 
   -- Configurações do clock
   signal keep_simulating: std_logic := '0'; -- delimita o tempo de geração do clock
   constant clockPeriod : time := 20 ns;     -- frequencia 100MHz
 
   -- Configuração de jogo
-  constant rodada : natural := 16; -- Nível de dificuldade
+  constant rodada : natural := 8; -- Nível de dificuldade
   constant modo   : natural := 2;
+
+  -- Função para calcular a largura do echo
+  function EchoLen(nota: std_logic_vector(3 downto 0) := "0000") return time is
+  begin
+    return (3*to_integer(unsigned(nota)) - 1)*(58.82 us);
+  end function;
 
   -- Array de testes
   type   test_vector is array(0 to 15) of std_logic_vector(3 downto 0);
   signal tests : test_vector := (
                                    --C_Major ? (AINDA EM DEBATE)
-                                   "0001", --G5 (783.99 Hz)
-                                   "0010", --F5
-                                   "0011", --E5
-                                   "0100", --D5
-                                   "0101", --C5 (523.25 Hz)
-                                   "0110", --B5
-                                   "0111", --A5
-                                   "1000", --G4
-                                   "1001", --F4
-                                   "1010", --E4
-                                   "1011", --D4
-                                   "1100", --C4 (261.63 Hz) 
-                                   "1011", --D4
-                                   "1010", --E4
-                                   "1001", --F4
-                                   "1000");--G4
+                                   "0001", -- (2.04cm, G5)
+                                   "0010", -- (3,99cm, F5)
+                                   "0011", -- (6,80cm, E5)
+                                   "0100", -- (9,69cm, D5)
+                                   "0101", -- (12,75cm, C5)
+                                   "0110", -- (15,81cm, B5)
+                                   "0111", -- (18,70cm, A5)
+                                   "1000", -- (22,01cm, G4)
+                                   "1001", -- (25,84cm, F4)
+                                   "1010", -- (28,56cm, E4)
+                                   "1011", -- (32,30cm, D4)
+                                   "1100", -- (35,70cm, C4)
+                                   "1011", -- (31,11cm, D4)
+                                   "1010", -- (27,54cm, E4)
+                                   "1001", -- (25,50cm, F4)
+                                   "1000"  -- (23,46cm, G4)
+                                );
   
 begin
   -- Gerador de clock: executa enquanto 'keep_simulating = 1', com o período especificado. 
@@ -102,16 +113,22 @@ begin
           reset           => rst_in,
           iniciar         => iniciar_in,
           ativar          => ativar_in,
-          botoes          => botoes_in,
+          chaves          => chaves_in,
+          echo            => echo_in,
+          sel_db          => '0',
+          trigger         => trigger_out,
+          pwm             => pwm_out,
+          notas           => notas_out,
+          jogador         => jogador_out,
           ganhou          => ganhou_out,
           perdeu          => perdeu_out,
-          jogador         => jogador_out,
-          notas           => notas_out,
-          db_jogada       => jogada_out,
-          db_contagem     => contagem_out,
-          db_estado       => estado_out,
-          db_memoria      => memoria_out,
-          db_rodada       => rodada_out
+          db_hex0         => open,
+          db_hex1         => open,
+          db_hex2         => open,
+          db_hex3         => open,
+          db_hex4         => open,
+          db_hex5         => open,
+          db_modo         => open
        );
  
   ---- Gera sinais de estimulo para a simulacao
@@ -139,18 +156,18 @@ begin
     iniciar_in <= '0';
     wait for 10*clockPeriod;
     -- Escolher Modo
-    botoes_in  <= std_logic_vector(to_unsigned(modo, 4));
+    chaves_in  <= std_logic_vector(to_unsigned(modo, 4));
     ativar_in   <= '1';
     wait for 10*clockPeriod;
-    botoes_in  <= "0000";
+    chaves_in  <= "0000";
     ativar_in   <= '0'; 
     wait for 2*clockPeriod;
     -- Escolher Dificuldade
-    botoes_in  <= std_logic_vector(to_unsigned(rodada-1, 4));
+    chaves_in  <= std_logic_vector(to_unsigned(rodada-1, 4));
     ativar_in   <= '1';
     wait for 10*clockPeriod;
-    ativar_in   <= '0'; 
-    botoes_in  <= "0000";
+    ativar_in   <= '0';
+    chaves_in   <= "0000";
     wait for 505*clockPeriod;
     tests(0) <= notas_out;
     assert ganhou_out   = '0'    report "bad initial ganhou"                      severity error;
@@ -162,61 +179,60 @@ begin
       -- Cada iteração corresponde a uma jogada
       -- Última rodada -> sem escrita
       if(i = rodada - 1) then
-        for k in 0 to i loop 
-          botoes_in  <= tests(k);
-          ativar_in   <= '1';
+        for k in 0 to i loop
+          assert false report "Jogada " & integer'image(k) severity note;
+          wait until falling_edge(trigger_out);
           wait for 3*clockPeriod;
-          assert notas_out = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
+          echo_in <= '1';
+          wait for EchoLen(tests(k));
+          echo_in <= '0';
+          wait for 10*clockPeriod;
+          assert notas_out = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(tests(k)))) severity error;
           -- última jogada da última rodada -> ganhou!
-            assert ganhou_out   = '0'  report "bad ganhou"                          severity error;
-            assert perdeu_out   = '0'  report "bad perdeu"                          severity error;
-            wait for 9*clockPeriod;
-            botoes_in  <= "0000";
-            ativar_in   <= '0';
-            wait for 3*clockPeriod;
-            assert notas_out     = "0000"   report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
-            if(k = rodada - 1) then
-              assert ganhou_out   = '1'  report "bad ganhou"  severity error;
-              assert perdeu_out   = '0'  report "bad perdeu"  severity error;
-            else
-              assert ganhou_out   = '0' report "bad ganhou"   severity error;
-              assert perdeu_out   = '0' report "bad perdeu"   severity error;
-            end if;
-            wait for 9*clockPeriod;
+          wait for 15*clockPeriod;
+          if(k = rodada - 1) then
+            assert ganhou_out   = '1'  report "bad ganhou"  severity error;
+            assert perdeu_out   = '0'  report "bad perdeu"  severity error;
+          else
+            assert ganhou_out   = '0' report "bad ganhou"   severity error;
+            assert perdeu_out   = '0' report "bad perdeu"   severity error;
+          end if;
+          wait for 15*clockPeriod;
         end loop;
       -- Demais rodadas -> escrita pós-jogada
       else
-        for k in 0 to i + 1 loop 
+        for k in 0 to i + 1 loop
+          assert false report "Jogada " & integer'image(k) severity note;
           if(k = i + 1) then
             -- Modo multijogador -> jogador escreve a próxima jogada
             if(modo = 2) then
-              botoes_in   <= tests(k);
-              ativar_in   <= '1';
+              wait until falling_edge(trigger_out);
               wait for 3*clockPeriod;
-              assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
+              echo_in <= '1';
+              wait for EchoLen(tests(k));
+              echo_in <= '0';
+              wait for 10*clockPeriod;
+              assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(tests(k)))) severity error;
             -- Demais modos -> jogador ve a jogada, determinada pela FPGA, e imita ela
             else
               wait for 1000*clockPeriod;
               tests(k) <= notas_out;
               wait for 750*clockPeriod;
-              assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
+              assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(tests(k)))) severity error;
               wait for 253*clockPeriod;
             end if;
           else
-            botoes_in <= tests(k);
-            ativar_in  <= '1';
+            wait until falling_edge(trigger_out);
             wait for 3*clockPeriod;
-            assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(notas_out))) severity error;
+            echo_in <= '1';
+            wait for EchoLen(tests(k));
+            echo_in <= '0';
+            wait for 10*clockPeriod;
+            assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(tests(k)))) severity error;
           end if;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
-          wait for 9*clockPeriod;
-          botoes_in  <= "0000";
-          ativar_in   <= '0';
-          wait for 3*clockPeriod;
-          assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
-          assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
-          wait for 9*clockPeriod;
+          wait for 15*clockPeriod;
         end loop;
       end if;
     end loop;

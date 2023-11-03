@@ -37,7 +37,6 @@ entity fluxo_dados is
           zeraE                    : in  std_logic;
           zeraT                    : in  std_logic;
           limpa                    : in  std_logic;
-          limpaRC                  : in  std_logic;
           contaCR                  : in  std_logic;
           contaI                   : in  std_logic;
           contaE                   : in  std_logic;
@@ -95,7 +94,7 @@ architecture estrutural of fluxo_dados is
   signal medida_bcd      : std_logic_vector(11 downto 0);
   signal medida_nota     : std_logic_vector(3 downto 0);
   signal pronto_sensor   : std_logic;
-  signal posicao_servo   : std_logic;
+  signal posicao_servo   : std_logic_vector(1 downto 0);
 
   component contador_163
     port (
@@ -148,20 +147,20 @@ architecture estrutural of fluxo_dados is
     );
 end component registrador_n;
 
-component edge_detector is
+  component edge_detector is
     port (
         clock  : in  std_logic;
         reset  : in  std_logic;
         sinal  : in  std_logic;
         pulso  : out std_logic
     );
-end component edge_detector;
+  end component edge_detector;
 
-component contador_m is
-  generic (
+  component contador_m is
+    generic (
       constant M: integer := 100 -- modulo do contador
-  );
-  port (
+    );
+    port (
       clock   : in  std_logic;
       zera_as : in  std_logic;
       zera_s  : in  std_logic;
@@ -169,27 +168,27 @@ component contador_m is
       Q       : out std_logic_vector(natural(ceil(log2(real(M))))-1 downto 0);
       fim     : out std_logic;
       meio    : out std_logic
-  );
-end component contador_m;
+    );
+  end component contador_m;
 
-component mux16x1 is
+  component mux16x1 is
     port(
         w : in std_logic_vector(15 downto 0);
         s : in std_logic_vector(3 downto 0);
         f : out std_logic
     );
-end component mux16x1;
+  end component mux16x1;
 
-component LSFR_viciado is
-  port(
+  component LSFR_viciado is
+    port(
       clock           : in  std_logic;
       reset           : in  std_logic;
       pseudo_random   : out std_logic_vector(3 downto 0) -- Número pseudo-aleatório
-  );
-end component;
+    );
+  end component;
 
-component interface_hcsr04 is
-  port (
+  component interface_hcsr04 is
+    port (
       clock     : in std_logic;
       reset     : in std_logic;
       medir     : in std_logic;
@@ -200,24 +199,24 @@ component interface_hcsr04 is
       db_reset  : out std_logic;
       db_medir  : out std_logic;
       db_estado : out std_logic_vector(3 downto 0)
-  );
-end component interface_hcsr04;
+    );
+  end component interface_hcsr04;
 
-component conversor_bcd_nota is
-  port(
-    digitos_bcd : in  std_logic_vector(11 downto 0);
-    nota        : out std_logic_vector(3 downto 0)
-  );
-end component;
+  component conversor_bcd_nota is
+    port(
+      digitos_bcd : in  std_logic_vector(11 downto 0);
+      nota        : out std_logic_vector(3 downto 0)
+    );
+  end component;
 
-component controle_servo is
-  port (
-    clock : in std_logic;
-    reset : in std_logic;
-    posicao : in std_logic_vector(1 downto 0);
-    controle : out std_logic
-  );
-end component controle_servo;
+  component controle_servo is
+    port (
+      clock : in std_logic;
+      reset : in std_logic;
+      posicao : in std_logic_vector(1 downto 0);
+      controle : out std_logic
+    );
+  end component controle_servo;
 
 begin
 
@@ -280,9 +279,9 @@ begin
   
   -- memoria: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
   memoria_multijogador: entity work.ram (ram_multijogador) -- usar arquitetura para ModelSim
-    generic map(
-      init_file => "ram_treino_1.mif" -- Quartus -> Será totalmente sobrescrita durante a partida
-    )
+    -- generic map(
+    --   init_file => "ram_treino_1.mif" -- Quartus -> Sobrescrito durante o jogo
+    -- )
     port map (
        clk          => clock,
        endereco     => s_endereco,
@@ -296,9 +295,9 @@ begin
 
   -- memoria_treino_1: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
   memoria_treino_1: entity work.ram (ram_treino_1) -- usar arquitetura para ModelSim
-    generic map(
-      init_file => "ram_treino_1.mif" -- Quartus
-    )
+    -- generic map(
+    --   init_file => "ram_treino_1.mif" -- Quartus
+    -- )
     port map (
        clk          => clock,
        endereco     => s_endereco,
@@ -310,9 +309,9 @@ begin
   
   --memoria_treino_2: entity work.ram (ram_mif)  -- usar esta linha para Intel Quartus
   memoria_treino_2: entity work.ram (ram_treino_2) -- usar arquitetura para ModelSim
-    generic map(
-      init_file => "ram_treino_2.mif" -- Quartus
-    )
+    -- generic map(
+    --   init_file => "ram_treino_2.mif" -- Quartus
+    -- )
     port map (
        clk          => clock,
        endereco     => s_endereco,
@@ -334,7 +333,7 @@ begin
     )
     port map (
         clock  => clock,
-        clear  => limpaRC,
+        clear  => limpa,
         enable => registraRC,
         D      => medida_nota,
         Q      => s_jogada
@@ -367,7 +366,8 @@ begin
 
   temporizador: contador_m
     generic map (
-        M => 375000000
+      M => 750000 -- simulacao
+      -- M => 375000000 -- quartus
     )
     port map (
       clock   => clock,
@@ -381,7 +381,8 @@ begin
 
   temporizador_inicial: contador_m
       generic map(
-        M => 50000000
+        M => 1000 -- simulacao
+        -- M => 50000000 --quartus
       )
       port map(
         clock   => clock,

@@ -37,7 +37,6 @@ entity unidade_controle is
         fimI                 : in  std_logic;
         timeout              : in  std_logic;
         limpa                : out std_logic;
-        limpaRC              : out std_logic;
         zeraCR               : out std_logic;
         zeraE                : out std_logic;
         zeraI                : out std_logic;
@@ -59,7 +58,7 @@ entity unidade_controle is
 end entity;
 
 architecture fsm of unidade_controle is
-    type t_estado is (inicial, espera_dificuldade, registra_dificuldade, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, espera_nova_jogada, inicia_mostra_jogada, mostra_jogada, espera_mostra_jogada, registra_modo, espera_modo);
+    type t_estado is (inicial, espera_dificuldade, registra_dificuldade, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, inicia_nova_jogada, espera_nova_jogada, registra_nova_jogada, inicia_mostra_jogada, mostra_jogada, espera_mostra_jogada, registra_modo, espera_modo);
     signal Eatual, Eprox: t_estado;
 begin
 
@@ -95,18 +94,19 @@ begin
         fim_perdeu                when  Eatual=compara_jogada and jogada_correta = '0' else
         espera_jogada             when  Eatual=proxima_jogada else
         fim_ganhou                when  Eatual=ultima_rodada and fimL = '1' else
-        espera_nova_jogada        when  Eatual=ultima_rodada and fimL = '0' and modo="10" else
+        inicia_nova_jogada        when  Eatual=ultima_rodada and fimL = '0' and modo="10" else
         espera_mostra_jogada      when  Eatual=ultima_rodada and fimL = '0' and (not (modo(0) = '0' and modo(1) = '1')) else
+        espera_nova_jogada        when  Eatual=inicia_nova_jogada else
         espera_nova_jogada        when  Eatual=espera_nova_jogada and jogada = '0' else
-        escreve_jogada            when  Eatual=espera_nova_jogada and jogada = '1' else
-        -- antes tinha o inicia_mostra_jogada
+        registra_nova_jogada      when  Eatual=espera_nova_jogada and jogada = '1' else
+        escreve_jogada            when  Eatual=registra_nova_jogada else
+        proxima_rodada            when  Eatual=escreve_jogada else
+        inicio_rodada             when  Eatual=proxima_rodada else
         espera_mostra_jogada      when  Eatual=espera_mostra_jogada and fimI = '0' else
         inicia_mostra_jogada      when  Eatual=espera_mostra_jogada and fimI = '1' else
         mostra_jogada             when  Eatual=inicia_mostra_jogada else
         mostra_jogada             when  Eatual=mostra_jogada and fimI='0' else
         proxima_rodada            when  Eatual=mostra_jogada and fimI='1' else
-        proxima_rodada            when  Eatual=escreve_jogada else
-        inicio_rodada             when  Eatual=proxima_rodada else
         fim_perdeu                when  Eatual=fim_perdeu  and iniciar='0' else
         espera_modo               when  Eatual=fim_perdeu  and iniciar='1' else
         fim_ganhou                when  Eatual=fim_ganhou  and iniciar='0' else
@@ -129,7 +129,7 @@ begin
                       '0' when others;
 
     with Eatual select
-        registraRC <=  '1' when registra_jogada | espera_nova_jogada,
+        registraRC <=  '1' when registra_jogada | registra_nova_jogada,
                        '0' when others;
 
     with Eatual select
@@ -177,11 +177,7 @@ begin
                 '0' when others;
 
     with Eatual select
-        limpaRC   <= '1' when inicial | fim_ganhou | fim_perdeu | fim_timeout | espera_mostra_jogada | ultima_rodada,
-                       '0' when others;
-
-    with Eatual select
-        medir_nota <= '1' when inicio_rodada,
+        medir_nota <= '1' when inicio_rodada | inicia_nova_jogada | proxima_jogada,
                       '0' when others;
 
     with Eatual select
@@ -211,6 +207,8 @@ begin
                      "10010" when mostra_jogada,        --12
                      "10011" when espera_mostra_jogada, --13
                      "10100" when inicia_mostra_jogada, --14
+                     "10101" when inicia_nova_jogada,   --15
+                     "10110" when registra_nova_jogada, --16
                      "00000" when others;
 
 end architecture fsm;
