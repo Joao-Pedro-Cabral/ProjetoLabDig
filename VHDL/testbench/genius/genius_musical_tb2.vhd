@@ -35,6 +35,7 @@ architecture tb of genius_musical_tb2 is
       sel_db                   : in  std_logic;
       trigger                  : out std_logic;
       pwm                      : out std_logic;
+      pwm2                     : out std_logic;
       notas                    : out std_logic_vector(3 downto 0);
       jogador                  : out std_logic;
       ganhou                   : out std_logic;
@@ -60,6 +61,7 @@ architecture tb of genius_musical_tb2 is
   ---- Declaracao dos sinais de saida
   signal trigger_out    : std_logic := '0';
   signal pwm_out        : std_logic := '0';
+  signal pwm2_out       : std_logic := '0';
   signal notas_out      : std_logic_vector(3 downto 0) := "0000";
   signal jogador_out    : std_logic := '0';
   signal ganhou_out     : std_logic := '0';
@@ -119,6 +121,7 @@ begin
         sel_db          => '0',
         trigger         => trigger_out,
         pwm             => pwm_out,
+        pwm2            => pwm2_out,
         notas           => notas_out,
         jogador         => jogador_out,
         ganhou          => ganhou_out,

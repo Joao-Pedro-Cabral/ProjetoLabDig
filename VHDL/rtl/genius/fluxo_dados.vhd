@@ -54,6 +54,7 @@ entity fluxo_dados is
 --Saidas
           trigger                  : out std_logic;
           pwm                      : out std_logic;
+          pwm2                     : out std_logic;
           notas                    : out std_logic_vector(3 downto 0);
           modo                     : out std_logic_vector(1 downto 0);
           enderecoIgualRodada      : out std_logic;
@@ -94,7 +95,8 @@ architecture estrutural of fluxo_dados is
   signal medida_bcd      : std_logic_vector(11 downto 0);
   signal medida_nota     : std_logic_vector(3 downto 0);
   signal pronto_sensor   : std_logic;
-  signal posicao_servo   : std_logic_vector(1 downto 0);
+  signal posicao_servo, posicao_servo2 : std_logic_vector(1 downto 0);
+  signal venceu1, perdeu1, venceu2, perdeu2: std_logic;
 
   component contador_163
     port (
@@ -433,10 +435,28 @@ begin
       controle => pwm
     );
 
+  pwm_servo2: controle_servo
+    port map (
+      clock    => clock,
+      reset    => limpa,
+      posicao  => posicao_servo2,
+      controle => pwm2
+    );
+
   -- Determinação da posição do servo
-  posicao_servo <= "11" when ganhou = '1' else
-                   "01" when perdeu = '1' else
+  venceu1 <= (((not seletor_modo(1)) or seletor_modo(0)) and ganhou) or (ganhou and (not s_rodada(0)));
+  perdeu1 <= (((not seletor_modo(1)) or seletor_modo(0)) and perdeu) or ((perdeu and (not s_rodada(0))) or
+             (ganhou and s_rodada(0)));
+  posicao_servo <= "11" when venceu1 = '1' else
+                   "01" when perdeu1 = '1' else
                    "00";
+
+  venceu2 <= (seletor_modo(1) and (not seletor_modo(0))) and ganhou and s_rodada(0);
+  perdeu2 <= (seletor_modo(1) and (not seletor_modo(0))) and ((perdeu and s_rodada(0)) or
+              (ganhou and (not s_rodada(0))));
+  posicao_servo2 <= "11" when venceu2 = '1' else
+                    "01" when perdeu2 = '1' else
+                    "00";
 
   -- Determinação dos possíveis fimL
   s_fimL(0)  <= s_rodada(0); -- Inatingível 

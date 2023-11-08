@@ -27,6 +27,7 @@ entity genius_musical is
         sel_db                   : in  std_logic;
         trigger                  : out std_logic;
         pwm                      : out std_logic;
+        pwm2                     : out std_logic;
         notas                    : out std_logic_vector(3 downto 0); -- simulacao
         jogador                  : out std_logic;
         ganhou                   : out std_logic;
@@ -70,6 +71,7 @@ architecture inicial of genius_musical is
             perdeu                   : in  std_logic;
             trigger                  : out std_logic;
             pwm                      : out std_logic;
+            pwm2                     : out std_logic;
             notas                    : out std_logic_vector(3 downto 0);
             modo                     : out std_logic_vector(1 downto 0);
             enderecoIgualRodada      : out std_logic;
@@ -142,7 +144,7 @@ UC : unidade_controle
     reset                => reset,
     iniciar              => iniciar,
     jogada               => jogada,
-    jogada_correta       =>  jogada_correta,
+    jogada_correta       => jogada_correta,
     enderecoIgualRodada  => enderecoIgualRodada,
     modo                 => modo,
     fimL                 => fimL,
@@ -196,6 +198,7 @@ DF : fluxo_dados
     perdeu              => s_perdeu,
     trigger             => trigger,
     pwm                 => pwm,
+    pwm2                => pwm2,
     notas               => notas, -- simulacao
     -- notas               => db_notas_s(3 downto 0), -- quartus
     modo                => modo,
