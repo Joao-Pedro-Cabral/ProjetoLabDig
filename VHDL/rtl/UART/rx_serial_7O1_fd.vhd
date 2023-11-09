@@ -48,7 +48,8 @@ architecture rx_serial_7O1_fd_arch of rx_serial_7O1_fd is
       conta   : in  std_logic;
       Q       : out std_logic_vector(natural(ceil(log2(real(M))))-1 downto 0);
       fim     : out std_logic;
-      meio    : out std_logic
+      meio    : out std_logic;
+      quarto  : out std_logic
     );
   end component;
 
@@ -96,7 +97,8 @@ begin
       conta   => conta,
       Q       => open,
       fim     => fim,
-      meio    => open
+      meio    => open,
+      quarto  => open
     );
 
   registrador_jogada: registrador_n

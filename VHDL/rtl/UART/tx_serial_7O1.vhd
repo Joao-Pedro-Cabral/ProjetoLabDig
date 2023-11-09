@@ -79,7 +79,8 @@ architecture tx_serial_7O1_arch of tx_serial_7O1 is
       conta   : in  std_logic;
       Q       : out std_logic_vector(natural(ceil(log2(real(M))))-1 downto 0);
       fim     : out std_logic;
-      meio    : out std_logic
+      meio    : out std_logic;
+      quarto  : out std_logic
     );
     end component;
 
@@ -137,7 +138,8 @@ begin
                  conta => '1', 
                  Q     => open, 
                  fim   => s_tick, 
-                 meio  => open
+                 meio  => open,
+                 quarto => open
              );
     
     -- saida

@@ -41,7 +41,8 @@ entity contador_m is
         conta   : in  std_logic;
         Q       : out std_logic_vector(natural(ceil(log2(real(M))))-1 downto 0);
         fim     : out std_logic;
-        meio    : out std_logic
+        meio    : out std_logic;
+        quarto  : out std_logic
     );
 end entity contador_m;
 
@@ -70,6 +71,11 @@ begin
         -- meio da contagem
         if IQ=M/2-1 then meio <= '1';
         else meio <= '0';
+        end if;
+
+        -- quarto da contagem
+        if IQ=M/4-1 then quarto <= '1';
+        else quarto <= '0';
         end if;
 
     end process;

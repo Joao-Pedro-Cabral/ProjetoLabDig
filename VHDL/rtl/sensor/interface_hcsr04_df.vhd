@@ -78,7 +78,8 @@ architecture structural of interface_hcsr04_df is
         conta   : in  std_logic;
         Q       : out std_logic_vector(natural(ceil(log2(real(M))))-1 downto 0);
         fim     : out std_logic;
-        meio    : out std_logic
+        meio    : out std_logic;
+        quarto  : out std_logic
     );
   end component contador_m;
 
@@ -148,7 +149,8 @@ begin
       conta   => contaT,
       Q       => open,
       fim     => fimT,
-      meio    => open
+      meio    => open,
+      quarto  => open
     );
 
   zera_timer <= zera or zeraT;

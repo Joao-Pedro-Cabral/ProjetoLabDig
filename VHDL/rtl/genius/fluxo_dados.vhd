@@ -168,7 +168,8 @@ end component registrador_n;
       conta   : in  std_logic;
       Q       : out std_logic_vector(natural(ceil(log2(real(M))))-1 downto 0);
       fim     : out std_logic;
-      meio    : out std_logic
+      meio    : out std_logic;
+      quarto  : out std_logic
     );
   end component contador_m;
 
@@ -369,7 +370,8 @@ begin
       conta   => contaT,
       Q       => open,
       fim     => fimT,
-      meio    => open
+      meio    => open,
+      quarto  => open
     );
 
   temporizador_inicial: contador_m
@@ -384,7 +386,8 @@ begin
         conta   => contaI,
         Q       => open,
         fim     => fimI,
-        meio    => open
+        meio    => open,
+        quarto  => open
       );
 
   registrador_rodada: registrador_n
