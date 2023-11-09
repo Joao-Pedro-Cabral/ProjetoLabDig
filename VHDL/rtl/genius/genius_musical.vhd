@@ -65,7 +65,6 @@ architecture inicial of genius_musical is
             registraRC               : in  std_logic;
             registraModo             : in  std_logic;
             registraSel              : in  std_logic;
-            configurar               : in  std_logic;
             notaSel                  : in  std_logic;
             ganhou                   : in  std_logic;
             perdeu                   : in  std_logic;
@@ -77,6 +76,7 @@ architecture inicial of genius_musical is
             enderecoIgualRodada      : out std_logic;
             jogada_correta           : out std_logic;
             jogada                   : out std_logic;
+            configurado              : out std_logic;
             jogador                  : out std_logic;
             fimL                     : out std_logic;
             fimE                     : out std_logic;
@@ -96,6 +96,7 @@ architecture inicial of genius_musical is
             reset                : in  std_logic;
             iniciar              : in  std_logic;
             jogada               : in  std_logic;
+            configurado          : in  std_logic;
             jogada_correta       : in  std_logic;
             enderecoIgualRodada  : in  std_logic;
             modo                 : in  std_logic_vector(1 downto 0);
@@ -109,7 +110,6 @@ architecture inicial of genius_musical is
             zeraT                : out std_logic;
             contaCR              : out std_logic;
             contaE               : out std_logic;
-            configurar           : out std_logic;
             medir_nota           : out std_logic;
             registraRC           : out std_logic;
             escreve              : out std_logic;
@@ -132,7 +132,7 @@ architecture inicial of genius_musical is
 
 signal  db_notas_s, db_medida0_s, db_medida1_s, db_medida2_s, db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
 signal  db_notas, db_medida0, db_medida1, db_medida2, db_estado, db_jogada, db_memoria, db_rodada, db_contagem : std_logic_vector(6 downto 0);
-signal  s_ganhou, s_perdeu, configurar, medir_nota, zeraI, limpa, registraModo, notaSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  s_ganhou, s_perdeu, configurado, medir_nota, zeraI, limpa, registraModo, notaSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 signal  modo : std_logic_vector(1 downto 0);
 signal  db_medida_s: std_logic_vector(11 downto 0);
 
@@ -157,7 +157,7 @@ UC : unidade_controle
     zeraT                => zeraT,
     contaCR              => contaCR,
     contaE               => contaE,
-    configurar           => configurar,
+    configurado           => configurado,
     medir_nota           => medir_nota,
     registraRC           => registraRC,
     escreve              => escreve,
@@ -192,7 +192,7 @@ DF : fluxo_dados
     registraRC          => registraRC,
     registraModo        => registraModo,
     registraSel         => registraSel,
-    configurar          => configurar,
+    configurado          => configurado,
     notaSel             => notaSel,
     ganhou              => s_ganhou,
     perdeu              => s_perdeu,

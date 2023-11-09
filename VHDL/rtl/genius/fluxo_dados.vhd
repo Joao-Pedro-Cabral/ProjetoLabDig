@@ -195,8 +195,9 @@ end component registrador_n;
       medir     : in std_logic;
       echo      : in std_logic;
       trigger   : out std_logic;
-      medida    : out std_logic_vector(11 downto 0); -- 3 digitos BCD
+      notas     : out std_logic_vector(3 downto 0);
       pronto    : out std_logic;
+      db_medida : out std_logic_vector(11 downto 0);
       db_reset  : out std_logic;
       db_medir  : out std_logic;
       db_estado : out std_logic_vector(3 downto 0)
@@ -335,13 +336,17 @@ begin
 
   interface_sensor: interface_hcsr04
     port map (
-      clock   => clock,
-      reset   => limpa,
-      medir   => medir_nota,
-      echo    => echo,
-      trigger => trigger,
-      medida  => medida_bcd,
-      pronto  => pronto_sensor
+      clock      => clock,
+      reset      => limpa,
+      medir      => medir_nota,
+      echo       => echo,
+      trigger    => trigger,
+      notas      => medida_nota,
+      pronto     => pronto_sensor,
+      db_medida  => db_medida,
+      db_reset   => open,
+      db_medir   => open,
+      db_estado  => open
     );
 
   ed_detector : edge_detector
@@ -474,6 +479,5 @@ begin
   db_jogada       <= s_jogada;
   db_contagem     <= s_endereco;
   db_memoria      <= s_dado;
-  db_medida       <= medida_bcd;
 
 end architecture estrutural;

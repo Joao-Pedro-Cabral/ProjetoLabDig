@@ -80,7 +80,7 @@ architecture tb of genius_musical_tb3 is
   -- Função para calcular a largura do echo
   function EchoLen(nota: std_logic_vector(3 downto 0) := "0000") return time is
   begin
-    return (3*to_integer(unsigned(nota)) - 1)*(58.82 us);
+    return (2*to_integer(unsigned(nota)) - 1)*(58.82 us);
   end function;
 
   -- Array de testes
