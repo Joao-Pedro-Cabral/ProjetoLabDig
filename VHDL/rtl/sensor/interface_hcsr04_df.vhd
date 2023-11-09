@@ -6,16 +6,19 @@ use ieee.math_real.all;
 
 entity interface_hcsr04_df is
   port (
-    clock     : in  std_logic;
-    pulso     : in  std_logic;
-    zera      : in  std_logic;
-    contaT    : in  std_logic;
-    registra  : in  std_logic;
-    gera      : in  std_logic;
-    fimT      : out std_logic;
-    trigger   : out std_logic;
-    fim_medida: out std_logic;
-    distancia : out std_logic_vector(11 downto 0)
+    clock        : in  std_logic;
+    pulso        : in  std_logic;
+    zera         : in  std_logic;
+    contaT       : in  std_logic;
+    zeraT        : in  std_logic;
+    registra     : in  std_logic;
+    gera         : in  std_logic;
+    fimT         : out std_logic;
+    trigger      : out std_logic;
+    fim_medida   : out std_logic;
+    nota_valida  : out std_logic;
+    notas        : out std_logic_vector(3 downto 0);
+    db_distancia : out std_logic_vector(11 downto 0)
   );
 end entity interface_hcsr04_df;
 
@@ -79,8 +82,17 @@ architecture structural of interface_hcsr04_df is
     );
   end component contador_m;
 
-  signal digito0, digito1, digito2 : std_logic_vector(3 downto 0);
+  component conversor_bcd_nota is
+    port(
+      digitos_bcd : in  std_logic_vector(11 downto 0);
+      nota        : out std_logic_vector(3 downto 0)
+    );
+  end component;
+
+  signal digito0, digito1, digito2, s_notas: std_logic_vector(3 downto 0);
   signal digitos: std_logic_vector(11 downto 0);
+  signal s_distancia: std_logic_vector(11 downto 0);
+  signal zera_timer: std_logic;
 
 begin
 
@@ -121,23 +133,39 @@ begin
       clear   => zera,
       enable  => registra,
       D       => digitos,
-      Q       => distancia
+      Q       => s_distancia
     );
 
   temporizador_timeout: contador_m
     generic map(
-      M => 50000000 -- 1s
+      -- M => 50000000 -- 1s: quartus
+      M => 5000 -- 100us: simulacao
     )
     port map(
       clock   => clock,
       zera_as => '0',
-      zera_s  => zera,
+      zera_s  => zera_timer,
       conta   => contaT,
       Q       => open,
       fim     => fimT,
       meio    => open
     );
 
+  zera_timer <= zera or zeraT;
+
+  bcd_nota: conversor_bcd_nota
+    port map (
+      digitos_bcd => s_distancia,
+      nota        => s_notas
+    );
+
   digitos <= digito2 & digito1 & digito0;
+
+  -- Saidas
+  notas <= s_notas;
+  nota_valida <= s_notas(0) or s_notas(1) or s_notas(2) or s_notas(3);
+
+  -- Depuracao
+  db_distancia <= s_distancia;
 
 end architecture;

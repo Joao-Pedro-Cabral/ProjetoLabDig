@@ -47,7 +47,6 @@ entity fluxo_dados is
           registraRC               : in  std_logic;
           registraModo             : in  std_logic;
           registraSel              : in  std_logic;
-          configurar               : in  std_logic;
           notaSel                  : in  std_logic;
           ganhou                   : in  std_logic;
           perdeu                   : in  std_logic;
@@ -60,6 +59,7 @@ entity fluxo_dados is
           enderecoIgualRodada      : out std_logic;
           jogada_correta           : out std_logic;
           jogada                   : out std_logic;
+          configurado              : out std_logic;
           jogador                  : out std_logic;
           fimL                     : out std_logic;
           fimE                     : out std_logic;
@@ -91,7 +91,6 @@ architecture estrutural of fluxo_dados is
   signal s_not_zeraCR    : std_logic;
   signal s_not_zeraE     : std_logic;
   signal s_not_escreve   : std_logic;
-  signal configurado     : std_logic;
   signal medida_bcd      : std_logic_vector(11 downto 0);
   signal medida_nota     : std_logic_vector(3 downto 0);
   signal pronto_sensor   : std_logic;
@@ -203,13 +202,6 @@ end component registrador_n;
       db_estado : out std_logic_vector(3 downto 0)
     );
   end component interface_hcsr04;
-
-  component conversor_bcd_nota is
-    port(
-      digitos_bcd : in  std_logic_vector(11 downto 0);
-      nota        : out std_logic_vector(3 downto 0)
-    );
-  end component;
 
   component controle_servo is
     port (
@@ -352,12 +344,6 @@ begin
       pronto  => pronto_sensor
     );
 
-  bcd_nota: conversor_bcd_nota
-    port map (
-      digitos_bcd => medida_bcd,
-      nota        => medida_nota
-    );
-
   ed_detector : edge_detector
     port map(
       clock => clock,
@@ -481,7 +467,7 @@ begin
   notas           <= s_dado when notaSel='1' else s_jogada;
   -- UC
   jogador         <= s_rodada(0);
-  jogada          <= configurado when configurar = '1' else pronto_sensor;
+  jogada          <= pronto_sensor;
   modo            <= seletor_modo;
   -- debug
   db_rodada       <= s_rodada;

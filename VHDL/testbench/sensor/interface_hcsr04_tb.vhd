@@ -16,6 +16,8 @@
 --
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use std.textio.all;
 
 entity interface_hcsr04_tb is
 end entity;
@@ -30,8 +32,11 @@ architecture tb of interface_hcsr04_tb is
         medir     : in  std_logic;
         echo      : in  std_logic;
         trigger   : out std_logic;
-        medida    : out std_logic_vector(11 downto 0);
+        notas     : out std_logic_vector(3 downto 0);
         pronto    : out std_logic;
+        db_medida : out std_logic_vector(11 downto 0);
+        db_reset  : out std_logic;
+        db_medir  : out std_logic;
         db_estado : out std_logic_vector(3 downto 0)
     );
   end component;
@@ -43,27 +48,57 @@ architecture tb of interface_hcsr04_tb is
   signal medir_in      : std_logic := '0';
   signal echo_in       : std_logic := '0';
   signal trigger_out   : std_logic := '0';
-  signal medida_out    : std_logic_vector (11 downto 0) := x"000";
+  signal notas_out     : std_logic_vector(3 downto 0) := "0000";
+  signal db_medida_out : std_logic_vector(11 downto 0) := x"000";
   signal pronto_out    : std_logic := '0';
   signal db_estado_out : std_logic_vector (3 downto 0)  := "0000";
 
   -- Configurações do clock
   constant clockPeriod   : time      := 20 ns; -- clock de 50MHz
   signal keep_simulating : std_logic := '0';   -- delimita o tempo de geração do clock
-  
-  -- Array de casos de teste
-  type caso_teste_type is record
-      id    : natural; 
-      tempo : integer;     
-  end record;
 
-  type casos_teste_array is array (natural range <>) of caso_teste_type;
+  function EchoLen(nota: std_logic_vector(3 downto 0) := "0000") return time is
+  begin
+    if nota = "0000" then
+      return 0 us;
+    else
+      return (2*to_integer(unsigned(nota)) - 1)*(58.82 us);
+    end if;
+  end function;
+
+  type casos_teste_array is array (natural range <>) of std_logic_vector(3 downto 0);
   constant casos_teste : casos_teste_array :=
       (
-        (1, 5882),  -- 5882us (100cm)
-        (2, 5899),  -- 5899us (100,29cm) truncar para 100cm
-        (3, 4353),  -- 4353us (74cm)
-        (4, 4399)   -- 4399us (74,79cm)  arredondar para 75cm
+        "0001", -- (2.04cm, G5)
+        "0010", -- (3,99cm, F5)
+        "0000", -- Invalido
+        "1111", -- Invalido
+        "0011", -- (6,80cm, E5)
+        "0100", -- (9,69cm, D5)
+        "1110", -- Invalido
+        "0101", -- (12,75cm, C5)
+        "0110", -- (15,81cm, B5)
+        "1111", -- Invalido
+        "1110", -- Invalido
+        "0111", -- (18,70cm, A5)
+        "1000", -- (22,01cm, G4)
+        "1111", -- Invalido
+        "1001", -- (25,84cm, F4)
+        "1010", -- (28,56cm, E4)
+        "0000", -- Invalido
+        "1011", -- (32,30cm, D4)
+        "1100", -- (35,70cm, C4)
+        "1111", -- Invalido
+        "1111", -- Invalido
+        "0000", -- Invalido
+        "1110", -- Invalido
+        "1011", -- (31,11cm, D4)
+        "1010", -- (27,54cm, E4)
+        "1001", -- (25,50cm, F4)
+        "1000", -- (23,46cm, G4)
+        "1101", -- Invalido
+        "0000", -- Invalido
+        "1111"  -- Invalido
         -- inserir aqui outros casos de teste (inserir "," na linha anterior)
       );
 
@@ -82,10 +117,13 @@ begin
            reset     => reset_in,
            medir     => medir_in,
            echo      => echo_in,
-           medida    => medida_out,
            trigger   => trigger_out,
+           notas     => notas_out,
            pronto    => pronto_out,
-           db_estado => db_estado_out
+           db_medida => db_medida_out,
+           db_estado => db_estado_out,
+           db_reset  => open,
+           db_medir  => open
        );
 
   -- geracao dos sinais de entrada (estimulos)
@@ -101,41 +139,43 @@ begin
 
     ---- inicio: reset ----------------
     wait for 2*clockPeriod;
-    reset_in <= '1'; 
+    reset_in <= '1';
     wait for 2 us;
     reset_in <= '0';
     wait until falling_edge(clock_in);
 
-    ---- espera de 100us
-    wait for 100 us;
-
     ---- loop pelos casos de teste
     for i in casos_teste'range loop
         -- 1) determina largura do pulso echo
-        assert false report "Caso de teste " & integer'image(casos_teste(i).id) & ": " &
-            integer'image(casos_teste(i).tempo) & "us" severity note;
-        larguraPulso <= casos_teste(i).tempo * 1 us; -- caso de teste "i"
+        assert false report "Caso de teste " & integer'image(i) severity note;
+        larguraPulso <= EchoLen(casos_teste(i)); -- caso de teste "i"
 
         -- 2) envia pulso medir
         wait until falling_edge(clock_in);
         medir_in <= '1';
         wait for 5*clockPeriod;
         medir_in <= '0';
-     
-        -- 3) espera por 400us (tempo entre trigger e echo)
-        wait for 400 us;
+
+        -- 3) espera por trigger
+        wait until falling_edge(trigger_out);
      
         -- 4) gera pulso de echo (largura = larguraPulso)
+        wait until falling_edge(clock_in);
+        wait until falling_edge(clock_in);
         echo_in <= '1';
         wait for larguraPulso;
         echo_in <= '0';
      
         -- 5) espera final da medida
-      	wait until pronto_out = '1';
-        assert false report "Fim do caso " & integer'image(casos_teste(i).id) severity note;
-     
+        if (casos_teste(i) <= "1100" and casos_teste(i) /= "0000") then
+          wait until pronto_out = '1';
+        else
+          wait for 50 us;
+        end if;
+        assert false report "Fim do caso " & integer'image(i) severity note;
+
         -- 6) espera entre casos de tese
-        wait for 100 us;
+        wait for 10 us;
 
     end loop;
 

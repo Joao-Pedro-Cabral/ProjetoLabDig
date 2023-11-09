@@ -30,6 +30,7 @@ entity unidade_controle is
         reset                : in  std_logic;
         iniciar              : in  std_logic;
         jogada               : in  std_logic;
+        configurado          : in  std_logic;
         jogada_correta       : in  std_logic;
         enderecoIgualRodada  : in  std_logic;
         modo                 : in  std_logic_vector(1 downto 0);
@@ -43,7 +44,6 @@ entity unidade_controle is
         zeraT                : out std_logic;
         contaCR              : out std_logic;
         contaE               : out std_logic;
-        configurar           : out std_logic;
         medir_nota           : out std_logic;
         registraRC           : out std_logic;
         escreve              : out std_logic;
@@ -76,11 +76,11 @@ begin
     Eprox <=
         inicial                   when  Eatual=inicial and iniciar='0' else
         espera_modo               when  Eatual=inicial and iniciar='1' else
-        espera_modo               when  Eatual=espera_modo and jogada='0' else
-        registra_modo             when  Eatual=espera_modo and jogada='1' else
+        espera_modo               when  Eatual=espera_modo and configurado='0' else
+        registra_modo             when  Eatual=espera_modo and configurado='1' else
         espera_dificuldade        when  Eatual=registra_modo else
-        espera_dificuldade        when  Eatual=espera_dificuldade and jogada='0' else
-        registra_dificuldade      when  Eatual=espera_dificuldade and jogada='1' else
+        espera_dificuldade        when  Eatual=espera_dificuldade and configurado='0' else
+        registra_dificuldade      when  Eatual=espera_dificuldade and configurado='1' else
         inicializa_elementos      when  Eatual=registra_dificuldade else
         inicializa_elementos      when  Eatual=inicializa_elementos and fimI = '0' else
         inicio_rodada             when  Eatual=inicializa_elementos and fimI = '1' else
@@ -178,10 +178,6 @@ begin
 
     with Eatual select
         medir_nota <= '1' when inicio_rodada | inicia_nova_jogada | proxima_jogada,
-                      '0' when others;
-
-    with Eatual select
-        configurar <= '1' when espera_modo | espera_dificuldade,
                       '0' when others;
 
     -- saida de depuracao (db_estado)
