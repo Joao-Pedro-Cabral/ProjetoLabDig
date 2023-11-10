@@ -22,7 +22,7 @@ entity genius_musical is
         reset                    : in  std_logic;
         iniciar                  : in  std_logic;
         ativar                   : in  std_logic;
-        chaves                   : in  std_logic_vector(3 downto 0);
+        chaves                   : in  std_logic_vector(5 downto 0);
         echo                     : in  std_logic;
         sel_db                   : in  std_logic;
         trigger                  : out std_logic;
@@ -48,7 +48,7 @@ architecture inicial of genius_musical is
         port(
             clock                    : in  std_logic;
             ativar                   : in  std_logic;
-            chaves                   : in  std_logic_vector(3 downto 0);
+            chaves                   : in  std_logic_vector(5 downto 0);
             echo                     : in  std_logic;
             zeraCR                   : in  std_logic;
             zeraI                    : in  std_logic;
@@ -63,8 +63,7 @@ architecture inicial of genius_musical is
             escreve                  : in  std_logic;
             escreve_aleatorio        : in  std_logic;
             registraRC               : in  std_logic;
-            registraModo             : in  std_logic;
-            registraSel              : in  std_logic;
+            registraConfig           : in  std_logic;
             notaSel                  : in  std_logic;
             ganhou                   : in  std_logic;
             perdeu                   : in  std_logic;
@@ -86,6 +85,7 @@ architecture inicial of genius_musical is
             db_jogada                : out std_logic_vector(3 downto 0);
             db_contagem              : out std_logic_vector(3 downto 0);
             db_memoria               : out std_logic_vector(3 downto 0);
+            db_sensor                : out std_logic_vector(3 downto 0);
             db_medida                : out std_logic_vector(11 downto 0)
         );
     end component;
@@ -114,8 +114,7 @@ architecture inicial of genius_musical is
             registraRC           : out std_logic;
             escreve              : out std_logic;
             escreve_aleatorio    : out std_logic;
-            registraSel          : out std_logic;
-            registraModo         : out std_logic;
+            registraConfig       : out std_logic;
             notaSel              : out std_logic;
             ganhou               : out std_logic;
             perdeu               : out std_logic;
@@ -130,9 +129,9 @@ architecture inicial of genius_musical is
     );
   end component;
 
-signal  db_notas_s, db_medida0_s, db_medida1_s, db_medida2_s, db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
-signal  db_notas, db_medida0, db_medida1, db_medida2, db_estado, db_jogada, db_memoria, db_rodada, db_contagem : std_logic_vector(6 downto 0);
-signal  s_ganhou, s_perdeu, configurado, medir_nota, zeraI, limpa, registraModo, notaSel, escreve_aleatorio, registraSel, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  db_sensor_s, db_notas_s, db_medida0_s, db_medida1_s, db_medida2_s, db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
+signal  db_sensor, db_notas, db_medida0, db_medida1, db_medida2, db_estado, db_jogada, db_memoria, db_rodada, db_contagem : std_logic_vector(6 downto 0);
+signal  s_ganhou, s_perdeu, configurado, medir_nota, zeraI, limpa, notaSel, escreve_aleatorio, registraConfig, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 signal  modo : std_logic_vector(1 downto 0);
 signal  db_medida_s: std_logic_vector(11 downto 0);
 
@@ -157,13 +156,12 @@ UC : unidade_controle
     zeraT                => zeraT,
     contaCR              => contaCR,
     contaE               => contaE,
-    configurado           => configurado,
+    configurado          => configurado,
     medir_nota           => medir_nota,
     registraRC           => registraRC,
     escreve              => escreve,
     escreve_aleatorio    => escreve_aleatorio,
-    registraSel          => registraSel,
-    registraModo         => registraModo,
+    registraConfig       => registraConfig,
     notaSel              => notaSel,
     ganhou               => s_ganhou,
     perdeu               => s_perdeu,
@@ -190,9 +188,8 @@ DF : fluxo_dados
     escreve             => escreve,
     escreve_aleatorio   => escreve_aleatorio,
     registraRC          => registraRC,
-    registraModo        => registraModo,
-    registraSel         => registraSel,
-    configurado          => configurado,
+    registraConfig      => registraConfig,
+    configurado         => configurado,
     notaSel             => notaSel,
     ganhou              => s_ganhou,
     perdeu              => s_perdeu,
@@ -214,6 +211,7 @@ DF : fluxo_dados
     db_jogada           => db_jogada_s(3 downto 0),
     db_contagem         => db_contagem_s(3 downto 0),
     db_memoria          => db_memoria_s(3 downto 0),
+    db_sensor           => db_sensor_s(3 downto 0),
     db_medida           => db_medida_s
   );
 
@@ -226,6 +224,7 @@ DF : fluxo_dados
   db_contagem_s(4) <= '0';
   db_rodada_s(4)   <= '0';
   db_notas_s(4)    <= '0';
+  db_sensor_s(4)   <= '0';
   db_notas_s(3 downto 0) <= "0000"; -- simulacao 
   db_medida0_s     <= '0' & db_medida_s(3 downto 0);
   db_medida1_s     <= '0' & db_medida_s(7 downto 4);
@@ -274,6 +273,12 @@ hex3: hexa7seg
         sseg => db_contagem
     );
 
+hex31: hexa7seg
+    port map(
+        hexa => db_sensor_s,
+        sseg => db_sensor
+    );
+
 hex4: hexa7seg
     port map(
         hexa => db_rodada_s,
@@ -289,7 +294,7 @@ hex5: hexa7seg
   db_hex0    <= db_jogada  when sel_db = '0' else db_medida0;
   db_hex1    <= db_memoria when sel_db = '0' else db_medida1;
   db_hex2    <= db_notas   when sel_db = '0' else db_medida2;
-  db_hex3    <= db_contagem;
+  db_hex3    <= db_contagem when sel_db = '0' else db_sensor;
   db_hex4    <= db_rodada;
   db_hex5    <= db_estado;
   db_modo    <= modo;

@@ -30,7 +30,7 @@ entity fluxo_dados is
     port (
           clock                    : in  std_logic;
           ativar                   : in  std_logic;
-          chaves                   : in  std_logic_vector(3 downto 0);
+          chaves                   : in  std_logic_vector(5 downto 0);
           echo                     : in  std_logic;
           zeraCR                   : in  std_logic;
           zeraI                    : in  std_logic;
@@ -45,8 +45,7 @@ entity fluxo_dados is
           escreve                  : in  std_logic;
           escreve_aleatorio        : in  std_logic;
           registraRC               : in  std_logic;
-          registraModo             : in  std_logic;
-          registraSel              : in  std_logic;
+          registraConfig           : in  std_logic;
           notaSel                  : in  std_logic;
           ganhou                   : in  std_logic;
           perdeu                   : in  std_logic;
@@ -69,6 +68,7 @@ entity fluxo_dados is
           db_jogada                : out std_logic_vector(3 downto 0);
           db_contagem              : out std_logic_vector(3 downto 0);
           db_memoria               : out std_logic_vector(3 downto 0);
+          db_sensor                : out std_logic_vector(3 downto 0);
           db_medida                : out std_logic_vector(11 downto 0)
     );
 end entity;
@@ -95,7 +95,7 @@ architecture estrutural of fluxo_dados is
   signal medida_nota     : std_logic_vector(3 downto 0);
   signal pronto_sensor   : std_logic;
   signal posicao_servo, posicao_servo2 : std_logic_vector(1 downto 0);
-  signal venceu1, perdeu1, venceu2, perdeu2: std_logic;
+  signal venceu1, venceu2 : std_logic;
 
   component contador_163
     port (
@@ -146,7 +146,7 @@ architecture estrutural of fluxo_dados is
         D      : in  std_logic_vector (N-1 downto 0);
         Q      : out std_logic_vector (N-1 downto 0) 
     );
-end component registrador_n;
+  end component registrador_n;
 
   component edge_detector is
     port (
@@ -347,7 +347,7 @@ begin
       db_medida  => db_medida,
       db_reset   => open,
       db_medir   => open,
-      db_estado  => open
+      db_estado  => db_sensor
     );
 
   ed_detector : edge_detector
@@ -397,8 +397,8 @@ begin
     port map(
       clock  => clock,
       clear  => limpa,
-      enable => registraSel,
-      D      => chaves,
+      enable => registraConfig,
+      D      => chaves(3 downto 0),
       Q      => seletor_rodada
     );
 
@@ -409,8 +409,8 @@ begin
     port map(
       clock  => clock,
       clear  => limpa,
-      enable => registraModo,
-      D      => chaves(1 downto 0),
+      enable => registraConfig,
+      D      => chaves(5 downto 4),
       Q      => seletor_modo
     );
    
@@ -438,19 +438,15 @@ begin
     );
 
   -- Determinação da posição do servo
-  venceu1 <= (((not seletor_modo(1)) or seletor_modo(0)) and ganhou) or (ganhou and (not s_rodada(0)));
-  perdeu1 <= (((not seletor_modo(1)) or seletor_modo(0)) and perdeu) or ((perdeu and (not s_rodada(0))) or
-             (ganhou and s_rodada(0)));
+  venceu1 <= (((not seletor_modo(1)) or seletor_modo(0)) and ganhou) or 
+             ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and (not s_rodada(0))) or (perdeu and s_rodada(0))));
   posicao_servo <= "11" when venceu1 = '1' else
-                   "01" when perdeu1 = '1' else
                    "00";
 
-  venceu2 <= (seletor_modo(1) and (not seletor_modo(0))) and ganhou and s_rodada(0);
-  perdeu2 <= (seletor_modo(1) and (not seletor_modo(0))) and ((perdeu and s_rodada(0)) or
-              (ganhou and (not s_rodada(0))));
-  posicao_servo2 <= "11" when venceu2 = '1' else
-                    "01" when perdeu2 = '1' else
-                    "00";
+  venceu2 <= (((not seletor_modo(1)) or seletor_modo(0)) and perdeu) or
+             ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and s_rodada(0)) or (perdeu and (not s_rodada(0)))));
+  posicao_servo2(1) <= venceu2;
+  posicao_servo2(0) <= venceu2;
 
   -- Determinação dos possíveis fimL
   s_fimL(0)  <= s_rodada(0); -- Inatingível 

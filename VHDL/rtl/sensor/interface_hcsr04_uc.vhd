@@ -70,7 +70,8 @@ begin
                                 end if;
         when armazenamento =>   Eprox <= verifica_nota;
         when verifica_nota =>   if nota_valida = '1' then Eprox <= final;
-                                else                      Eprox <= preparacao;
+                                elsif fimT = '1'     then Eprox <= preparacao;
+                                else                      Eprox <= verifica_nota;
                                 end if;
         when final =>           Eprox <= inicial;
         when others =>          Eprox <= inicial;
@@ -88,9 +89,9 @@ begin
   with Eatual select
       pronto <= '1' when final, '0' when others;
   with Eatual select
-      contaT <= '1' when espera_echo, '0' when others;
+      contaT <= '1' when espera_echo | verifica_nota, '0' when others;
   with Eatual select
-      zeraT  <= '1' when verifica_nota, '0' when others;
+      zeraT  <= '1' when armazenamento , '0' when others;
 
   with Eatual select
       db_estado <= "0000" when inicial, 

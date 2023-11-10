@@ -48,8 +48,7 @@ entity unidade_controle is
         registraRC           : out std_logic;
         escreve              : out std_logic;
         escreve_aleatorio    : out std_logic;
-        registraSel          : out std_logic;
-        registraModo         : out std_logic;
+        registraConfig       : out std_logic;
         notaSel              : out std_logic;
         ganhou               : out std_logic;
         perdeu               : out std_logic;
@@ -58,7 +57,7 @@ entity unidade_controle is
 end entity;
 
 architecture fsm of unidade_controle is
-    type t_estado is (inicial, espera_dificuldade, registra_dificuldade, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, inicia_nova_jogada, espera_nova_jogada, registra_nova_jogada, inicia_mostra_jogada, mostra_jogada, espera_mostra_jogada, registra_modo, espera_modo);
+    type t_estado is (inicial, espera_config, registra_config, inicializa_elementos, inicio_rodada, proxima_rodada, ultima_rodada, espera_jogada, registra_jogada, compara_jogada, proxima_jogada, fim_ganhou, fim_perdeu, fim_timeout, escreve_jogada, inicia_nova_jogada, espera_nova_jogada, registra_nova_jogada, inicia_mostra_jogada, mostra_jogada, espera_mostra_jogada);
     signal Eatual, Eprox: t_estado;
 begin
 
@@ -75,13 +74,10 @@ begin
     -- logica de proximo estado
     Eprox <=
         inicial                   when  Eatual=inicial and iniciar='0' else
-        espera_modo               when  Eatual=inicial and iniciar='1' else
-        espera_modo               when  Eatual=espera_modo and configurado='0' else
-        registra_modo             when  Eatual=espera_modo and configurado='1' else
-        espera_dificuldade        when  Eatual=registra_modo else
-        espera_dificuldade        when  Eatual=espera_dificuldade and configurado='0' else
-        registra_dificuldade      when  Eatual=espera_dificuldade and configurado='1' else
-        inicializa_elementos      when  Eatual=registra_dificuldade else
+        espera_config             when  Eatual=inicial and iniciar='1' else
+        espera_config             when  Eatual=espera_config and configurado='0' else
+        registra_config           when  Eatual=espera_config and configurado='1' else
+        inicializa_elementos      when  Eatual=registra_config else
         inicializa_elementos      when  Eatual=inicializa_elementos and fimI = '0' else
         inicio_rodada             when  Eatual=inicializa_elementos and fimI = '1' else
         espera_jogada             when  Eatual=inicio_rodada else 
@@ -108,11 +104,11 @@ begin
         mostra_jogada             when  Eatual=mostra_jogada and fimI='0' else
         proxima_rodada            when  Eatual=mostra_jogada and fimI='1' else
         fim_perdeu                when  Eatual=fim_perdeu  and iniciar='0' else
-        espera_modo               when  Eatual=fim_perdeu  and iniciar='1' else
+        espera_config             when  Eatual=fim_perdeu  and iniciar='1' else
         fim_ganhou                when  Eatual=fim_ganhou  and iniciar='0' else
-        espera_modo               when  Eatual=fim_ganhou  and iniciar='1' else
+        espera_config             when  Eatual=fim_ganhou  and iniciar='1' else
         fim_timeout               when  Eatual=fim_timeout and iniciar='0' else
-        espera_modo               when  Eatual=fim_timeout and iniciar='1' else
+        espera_config             when  Eatual=fim_timeout and iniciar='1' else
         inicial; 
 
     -- logica de saída (maquina de Moore)
@@ -153,11 +149,11 @@ begin
                     '0' when others;
 
   with Eatual select
-        escreve <=  '1' when escreve_jogada | inicia_mostra_jogada | registra_modo,
+        escreve <=  '1' when escreve_jogada | inicia_mostra_jogada | registra_config,
                     '0' when others;
 
     with Eatual select
-        registraSel    <=   '1' when registra_dificuldade,
+        registraConfig   <= '1' when registra_config,
                             '0' when others;
 
     with Eatual select 
@@ -165,16 +161,12 @@ begin
                         '0' when others;
 
     with Eatual select 
-        zeraI <= '1' when inicia_mostra_jogada | registra_dificuldade | ultima_rodada,
+        zeraI <= '1' when inicia_mostra_jogada | registra_config | ultima_rodada,
                  '0' when others;
 
     with Eatual select 
-        registraModo <= '1' when registra_modo,
-                '0' when others;
-
-    with Eatual select 
-        escreve_aleatorio <= '1' when registra_modo,
-                '0' when others;
+        escreve_aleatorio <= '1' when registra_config,
+                             '0' when others;
 
     with Eatual select
         medir_nota <= '1' when inicio_rodada | inicia_nova_jogada | proxima_jogada,
@@ -192,14 +184,12 @@ begin
                      "00111" when proxima_rodada,       -- 7
                      "01000" when espera_nova_jogada,   -- 8
                      "01001" when escreve_jogada,       -- 9
-                     "01010" when espera_dificuldade,   -- A
-                     "01011" when registra_dificuldade, -- B
+                     "01010" when espera_config,        -- A
+                     "01011" when registra_config,      -- B
                      "01100" when fim_ganhou,           -- C
                      "01101" when fim_perdeu,           -- D
                      "01110" when fim_timeout,          -- E
                      "01111" when espera_jogada,        -- F
-                     "10000" when espera_modo,          --10
-                     "10001" when registra_modo,        --11
                      "10010" when mostra_jogada,        --12
                      "10011" when espera_mostra_jogada, --13
                      "10100" when inicia_mostra_jogada, --14

@@ -77,7 +77,7 @@ begin
       conta   => conta_tick,
       Q       => open,
       fim     => open,
-      meio    => open,
-      quarto  => tick
+      meio    => tick,
+      quarto  => open
     );
 end architecture;

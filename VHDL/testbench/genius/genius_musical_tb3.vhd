@@ -30,7 +30,7 @@ architecture tb of genius_musical_tb3 is
       reset                    : in  std_logic;
       iniciar                  : in  std_logic;
       ativar                   : in  std_logic;
-      chaves                   : in  std_logic_vector(3 downto 0);
+      chaves                   : in  std_logic_vector(5 downto 0);
       echo                     : in  std_logic;
       sel_db                   : in  std_logic;
       trigger                  : out std_logic;
@@ -55,7 +55,7 @@ architecture tb of genius_musical_tb3 is
   signal rst_in     : std_logic := '0';
   signal iniciar_in : std_logic := '0';
   signal ativar_in  : std_logic := '0';
-  signal chaves_in  : std_logic_vector(3 downto 0) := "0000";
+  signal chaves_in  : std_logic_vector(5 downto 0) := "000000";
   signal echo_in    : std_logic := '0';
 
   ---- Declaracao dos sinais de saida
@@ -158,18 +158,12 @@ begin
     wait until falling_edge(clk_in);
     iniciar_in <= '0';
     wait for 10*clockPeriod;
-    chaves_in  <= std_logic_vector(to_unsigned(modo, 4));
-    ativar_in  <= '1';
+    -- Escolher Modo e Dificuldade
+    chaves_in  <= std_logic_vector(to_unsigned(16*modo + rodada-1, 6));
+    ativar_in   <= '1';
     wait for 10*clockPeriod;
-    chaves_in  <= "0000";
-    ativar_in  <= '0'; 
-    wait for 2*clockPeriod;
-    -- Escolher Dificuldade
-    chaves_in  <= std_logic_vector(to_unsigned(rodada, 4));
-    ativar_in  <= '1';
-    wait for 10*clockPeriod;
-    ativar_in  <= '0';
-    chaves_in  <= "0000";
+    chaves_in  <= "000000";
+    ativar_in   <= '0'; 
     wait for 505*clockPeriod;
     tests(0) <= notas_out;
     assert ganhou_out   = '0'    report "bad initial ganhou"                      severity error;
