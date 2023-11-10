@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
--- Arquivo   : rx_serial_7O1_tb.vhd
+-- Arquivo   : rx_serial_tb.vhd
 -- Projeto   : Experiencia 2 - Comunicacao Serial Assincrona
 ------------------------------------------------------------------------------
 -- Descricao : testbench básico para circuito de recepcao serial 
@@ -20,10 +20,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity rx_serial_7O1_tb is
+entity rx_serial_tb is
 end entity;
 
-architecture tb of rx_serial_7O1_tb is
+architecture tb of rx_serial_tb is
   
   -- Declaração de sinais para conectar o componente a ser testado (DUT)
   signal clock_in              : std_logic  := '0';
@@ -36,9 +36,9 @@ architecture tb of rx_serial_7O1_tb is
 
   -- para procedimento UART_WRITE_BYTE
   signal entrada_serial_in : std_logic := '1';
-  signal serialData        : std_logic_vector(7 downto 0) := "00000000";
+  signal serialData        : std_logic_vector(8 downto 0) := "000000000";
 
-  -- Configura��es do clock
+  -- Configurações do clock
   constant clockPeriod : time := 20 ns;            -- 50MHz
   -- constant bitPeriod   : time := 5208*clockPeriod; -- 5208 clocks por bit (9.600 bauds)
   constant bitPeriod   : time := 434*clockPeriod;  -- 434 clocks por bit (115.200 bauds)
@@ -48,7 +48,7 @@ architecture tb of rx_serial_7O1_tb is
   -- adaptacao de codigo acessado de:
   -- https://www.nandland.com/goboard/uart-go-board-project-part1.html
   procedure UART_WRITE_BYTE (
-      Data_In : in  std_logic_vector(7 downto 0);
+      Data_In : in  std_logic_vector(8 downto 0);
       signal Serial_Out : out std_logic ) is
   begin
 
@@ -57,7 +57,7 @@ architecture tb of rx_serial_7O1_tb is
       wait for bitPeriod;
 
       -- envia 8 bits seriais
-      for ii in 0 to 7 loop
+      for ii in 0 to 8 loop
           Serial_Out <= Data_In(ii);
           wait for bitPeriod;
       end loop;  -- loop ii
@@ -72,16 +72,16 @@ architecture tb of rx_serial_7O1_tb is
   ---- Array de casos de teste
   type caso_teste_type is record
       id   : natural;
-      data : std_logic_vector(7 downto 0);     
+      data : std_logic_vector(8 downto 0);
   end record;
 
   type casos_teste_array is array (natural range <>) of caso_teste_type;
   constant casos_teste : casos_teste_array :=
       (
-        (1, "00110101"), -- 35H (dado=35H + paridade=0) erro para 7O1
-        (2, "10110101"), -- B5H (dado=35H + paridade=1) ok para 7O1
-        (3, "11010100"), -- C4H (dado=54H + paridade=1) erro para 7O1
-        (4, "01010100")  -- 54H (dado=54H + paridade=0) ok para 7O1
+        (1, "000110101"), -- 035H (dado=35H + paridade=0) erro para 7O1
+        (2, "110110101"), -- 1B5H (dado=35H + paridade=1) ok para 7O1
+        (3, "111010100"), -- 1D4H (dado=54H + paridade=1) erro para 7O1
+        (4, "001010100")  -- 054H (dado=54H + paridade=0) ok para 7O1
         -- inserir aqui outros casos de teste (inserir "," na linha anterior)
       );
   signal caso : natural;
@@ -96,7 +96,7 @@ begin
   clock_in <= (not clock_in) and keep_simulating after clockPeriod/2;
  
   -- Instanciação direta DUT (Device Under Test)
-  DUT: entity work.rx_serial_7O1 (estrutural)
+  DUT: entity work.rx_serial (estrutural)
        port map (  
            clock             => clock_in, 
            reset             => reset_in,

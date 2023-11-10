@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-entity rx_serial_7O1_fd is
+entity rx_serial_fd is
   port (
       clock             : in  std_logic;
       reset             : in  std_logic;
@@ -14,13 +14,13 @@ entity rx_serial_7O1_fd is
       conta             : in  std_logic;
       registra          : in  std_logic;
       dado_serial       : in  std_logic;
-      dado_recebido     : out std_logic_vector(6 downto 0);
+      dado_recebido     : out std_logic_vector(7 downto 0);
       paridade_recebida : out std_logic;
       fim               : out std_logic
   );
 end entity;
 
-architecture rx_serial_7O1_fd_arch of rx_serial_7O1_fd is
+architecture rx_serial_fd_arch of rx_serial_fd is
 
   component deslocador_n
     generic (
@@ -66,15 +66,15 @@ architecture rx_serial_7O1_fd_arch of rx_serial_7O1_fd is
     );
   end component;
 
-  signal dado_deslocado: std_logic_vector(9 downto 0);
-  signal dado_armazenado: std_logic_vector(7 downto 0);
+  signal dado_deslocado: std_logic_vector(10 downto 0);
+  signal dado_armazenado: std_logic_vector(8 downto 0);
   signal limpa_reg: std_logic;
 
 begin
 
   shift_register: deslocador_n
     generic map (
-      N => 10
+      N => 11
     )
     port map (
       clock          => clock,
@@ -82,13 +82,13 @@ begin
       carrega        => carrega,
       desloca        => desloca,
       entrada_serial => dado_serial,
-      dados          => "1111111111",
+      dados          => "11111111111",
       saida          => dado_deslocado
     );
 
   conta_dado: contador_m
     generic map (
-      M => 11
+      M => 12
     ) 
     port map (
       clock   => clock,
@@ -103,18 +103,18 @@ begin
 
   registrador_jogada: registrador_n
     generic map(
-      N => 8
+      N => 9
     )
     port map (
         clock => clock,
         clear => limpa_reg,
         enable => registra,
-        D =>  dado_deslocado(8 downto 1),
+        D => dado_deslocado(9 downto 1),
         Q => dado_armazenado
     );
 
   limpa_reg <= limpa or reset;
 
-  dado_recebido     <= dado_armazenado(6 downto 0);
-  paridade_recebida <= dado_armazenado(7);
+  dado_recebido     <= dado_armazenado(7 downto 0);
+  paridade_recebida <= dado_armazenado(8);
 end architecture;

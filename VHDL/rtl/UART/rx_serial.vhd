@@ -4,12 +4,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-entity rx_serial_7O1 is
+entity rx_serial is
   port (
     clock             : in std_logic;
     reset             : in std_logic;
     dado_serial       : in std_logic;
-    dado_recebido     : out std_logic_vector(6 downto 0);
+    dado_recebido     : out std_logic_vector(7 downto 0);
     paridade_recebida : out std_logic;
     pronto            : out std_logic;
     db_dado_serial    : out std_logic;
@@ -17,9 +17,9 @@ entity rx_serial_7O1 is
   );
 end entity;
 
-architecture estrutural of rx_serial_7O1 is
+architecture estrutural of rx_serial is
 
-  component rx_serial_7O1_fd
+  component rx_serial_fd
     port (
         clock             : in  std_logic;
         reset             : in  std_logic;
@@ -30,7 +30,7 @@ architecture estrutural of rx_serial_7O1 is
         conta             : in  std_logic;
         registra          : in  std_logic;
         dado_serial       : in  std_logic;
-        dado_recebido     : out std_logic_vector(6 downto 0);
+        dado_recebido     : out std_logic_vector(7 downto 0);
         paridade_recebida : out std_logic;
         fim               : out std_logic
     );
@@ -73,7 +73,7 @@ architecture estrutural of rx_serial_7O1 is
   signal carrega, limpa, zera, desloca, conta, registra, fim, tick : std_logic;
 begin
 
-  df: rx_serial_7O1_fd
+  df: rx_serial_fd
     port map(
       clock => clock,
       reset => reset,

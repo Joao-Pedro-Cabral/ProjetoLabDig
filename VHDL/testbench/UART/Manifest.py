@@ -1,10 +1,10 @@
 files = [
-  "rx_serial_7O1_tb.vhd",
-  "tx_serial_7O1_tb.vhd"
+    "rx_serial_tb.vhd",
+    "tx_serial_tb.vhd"
 ]
 
 modules = {
-  "local" : [
-    "../../rtl/UART",
-  ]
+    "local": [
+        "../../rtl/UART",
+    ]
 }

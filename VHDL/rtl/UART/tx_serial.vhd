@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
--- Arquivo   : tx_serial_7O1.vhd
+-- Arquivo   : tx_serial.vhd
 -- Projeto   : Experiencia 2 - Comunicacao Serial Assincrona
 -------------------------------------------------------------------
 -- Descricao : circuito da experiencia 2 
@@ -22,12 +22,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-entity tx_serial_7O1 is
+entity tx_serial is
     port (
         clock           : in  std_logic;
         reset           : in  std_logic;
         partida         : in  std_logic;
-        dados_ascii     : in  std_logic_vector(6 downto 0);
+        dados_ascii     : in  std_logic_vector(7 downto 0);
         saida_serial    : out std_logic;
         pronto          : out std_logic;
         db_partida      : out std_logic;
@@ -36,10 +36,10 @@ entity tx_serial_7O1 is
     );
 end entity;
 
-architecture tx_serial_7O1_arch of tx_serial_7O1 is
+architecture tx_serial_arch of tx_serial is
      
     component tx_serial_uc 
-    port ( 
+      port ( 
         clock     : in  std_logic;
         reset     : in  std_logic;
         partida   : in  std_logic;
@@ -51,37 +51,37 @@ architecture tx_serial_7O1_arch of tx_serial_7O1 is
         desloca   : out std_logic;
         pronto    : out std_logic;
         db_estado : out std_logic_vector(3 downto 0)
-    );
+      );
     end component;
 
-    component tx_serial_7O1_fd
-    port (
+    component tx_serial_fd
+      port (
         clock        : in  std_logic;
         reset        : in  std_logic;
         zera         : in  std_logic;
         conta        : in  std_logic;
         carrega      : in  std_logic;
         desloca      : in  std_logic;
-        dados_ascii  : in  std_logic_vector(6 downto 0);
+        dados_ascii  : in  std_logic_vector(7 downto 0);
         saida_serial : out std_logic;
         fim          : out std_logic
-    );
+      );
     end component;
     
     component contador_m
-    generic (
+      generic (
         constant M : integer
-    );
-    port (
-      clock   : in  std_logic;
-      zera_as : in  std_logic;
-      zera_s  : in  std_logic;
-      conta   : in  std_logic;
-      Q       : out std_logic_vector(natural(ceil(log2(real(M))))-1 downto 0);
-      fim     : out std_logic;
-      meio    : out std_logic;
-      quarto  : out std_logic
-    );
+      );
+      port (
+        clock   : in  std_logic;
+        zera_as : in  std_logic;
+        zera_s  : in  std_logic;
+        conta   : in  std_logic;
+        Q       : out std_logic_vector(natural(ceil(log2(real(M))))-1 downto 0);
+        fim     : out std_logic;
+        meio    : out std_logic;
+        quarto  : out std_logic
+      );
     end component;
 
     signal s_reset : std_logic;
@@ -110,7 +110,7 @@ begin
            );
 
     -- fluxo de dados
-    U2_FD: tx_serial_7O1_fd 
+    U2_FD: tx_serial_fd 
            port map (
                clock        => clock, 
                reset        => s_reset, 

@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
--- Arquivo   : tx_serial_7O1_tb.vhd
+-- Arquivo   : tx_serial_tb.vhd
 -- Projeto   : Experiencia 2 - Comunicacao Serial Assincrona
 ------------------------------------------------------------------------------
 -- Descricao : circuito da experiencia 2 
 -- > modelo de testbench para simulacao do circuito
 -- > de transmissao serial assincrona
 -- > 
--- > simula a entidade fornecida tx_serial_7O1
+-- > simula a entidade fornecida tx_serial
 -- > usa um vetor de teste para especificar casos de teste
 ------------------------------------------------------------------------------
 -- Revisoes  :
@@ -20,18 +20,18 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity tx_serial_7O1_tb is
+entity tx_serial_tb is
 end entity;
 
-architecture tb of tx_serial_7O1_tb is
+architecture tb of tx_serial_tb is
   
   -- Componente a ser testado (Device Under Test -- DUT)
-  component tx_serial_7O1
+  component tx_serial
     port (
         clock           : in  std_logic;
         reset           : in  std_logic;
         partida         : in  std_logic;
-        dados_ascii     : in  std_logic_vector(6 downto 0);
+        dados_ascii     : in  std_logic_vector(7 downto 0);
         saida_serial    : out std_logic;
         pronto          : out std_logic;
         db_partida      : out std_logic;
@@ -45,7 +45,7 @@ architecture tb of tx_serial_7O1_tb is
   signal clock_in         : std_logic := '0';
   signal reset_in         : std_logic := '0';
   signal partida_in       : std_logic := '0';
-  signal dados_ascii_7_in : std_logic_vector (6 downto 0) := "0000000";
+  signal dados_ascii_7_in : std_logic_vector (7 downto 0) := "00000000";
   -- signal dados_ascii_8_in : std_logic_vector (7 downto 0) := "00000000";
   signal saida_serial_out : std_logic := '1';
   signal pronto_out       : std_logic := '0';
@@ -64,7 +64,7 @@ begin
   clock_in <= (not clock_in) and keep_simulating after clockPeriod/2;
   
   -- Conecta DUT (Device Under Test)
-  dut: tx_serial_7O1
+  dut: tx_serial
        port map
        ( 
            clock           => clock_in,
@@ -82,12 +82,12 @@ begin
   -- geracao dos sinais de entrada (estimulos)
   stimulus: process is
 
-  type array_std_logic_vector_7 is array (natural range <>) of std_logic_vector(6 downto 0);
-  constant vetor_teste: array_std_logic_vector_7 :=
-     ("0110101",   -- 35h (5)
-      "1010101",   -- 55h (U)
-      "1111110",   -- 7Eh (~)
-      "1111111");  -- 7Fh (DEL)
+  type array_std_logic_vector_8 is array (natural range <>) of std_logic_vector(7 downto 0);
+  constant vetor_teste: array_std_logic_vector_8 :=
+     ("00110101",   -- 35h (5)
+      "01010101",   -- 55h (U)
+      "11111110",   -- FEh (~)
+      "11111111");  -- FFh (DEL)
 
   begin
   
