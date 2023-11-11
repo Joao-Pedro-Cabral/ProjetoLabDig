@@ -13,7 +13,7 @@ entity rx_musical is
     jogada        : out std_logic;
     notas         : out std_logic_vector(3 downto 0);
     db_dado_rx    : out std_logic;
-    db_estado     : out std_logic_vector(3 downto 0);
+    db_estado     : out std_logic_vector(3 downto 0)
   );
 end entity rx_musical;
 
@@ -46,7 +46,7 @@ architecture structural of rx_musical is
     );
   end component rx_musical_uc;
 
-  signal iniciar, zera, fim_rx: std_logic;
+  signal zera, fim_rx: std_logic;
   signal index: std_logic_vector(1 downto 0);
 
 begin

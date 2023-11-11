@@ -42,8 +42,8 @@ begin
         when espera_dado =>     if fim_rx = '1' then Eprox <= decodifica;
                                 else Eprox <= espera_dado;
                                 end if;
-        when decodifica =>      if index = "00" then Eprox <= envia_iniciar;
-                                elsif index = "01" then Eprox <= envia_nota;
+        when decodifica =>      if index = "11" then Eprox <= envia_iniciar;
+                                elsif index = "00" then Eprox <= envia_nota;
                                 else Eprox <= espera_dado;
                                 end if;
         when envia_iniciar =>   Eprox <= envia_config;
@@ -64,7 +64,7 @@ begin
       jogada      <= '1' when envia_nota, '0' when others;
 
   -- depuração
-  with present_state select
+  with Eatual select
     db_estado <= "0000" when inicial,
                  "0001" when espera_dado,
                  "0010" when decodifica,

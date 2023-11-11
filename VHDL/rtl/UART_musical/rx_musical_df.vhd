@@ -47,7 +47,7 @@ begin
       db_estado         => open
     );
 
-  index        <= dado_recebido(1 downto 0);
+  index        <= dado_recebido(7 downto 6);
   configuracao <= dado_recebido(5 downto 0);
   notas        <= dado_recebido(3 downto 0);
 

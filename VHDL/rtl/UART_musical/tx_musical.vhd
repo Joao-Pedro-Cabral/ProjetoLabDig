@@ -7,7 +7,7 @@ entity tx_musical is
     clock         : in  std_logic;
     reset         : in  std_logic;
     enviar_config : in  std_logic;
-    enviar_nota   : in  std_logic;
+    enviar_jogada : in  std_logic;
     modo          : in  std_logic_vector(1 downto 0);
     dificuldade   : in  std_logic_vector(3 downto 0);
     perdeu        : in  std_logic;
@@ -17,6 +17,7 @@ entity tx_musical is
     jogada        : in  std_logic_vector(3 downto 0);
     rodada        : in  std_logic_vector(3 downto 0);
     tx            : out std_logic;
+    pronto        : out std_logic;
     db_dado_tx    : out std_logic;
     db_estado     : out std_logic_vector(3 downto 0)
   );
@@ -58,6 +59,7 @@ architecture structural of tx_musical is
       configurar    : out std_logic;
       enviar        : out std_logic;
       contaJ        : out std_logic;
+      pronto        : out std_logic;
       db_estado     : out std_logic_vector(3 downto 0)
     );
   end component tx_musical_uc;
@@ -99,6 +101,7 @@ begin
       configurar    => configurar,
       enviar        => enviar,
       contaJ        => contaJ,
+      pronto        => pronto,
       db_estado     => db_estado
     );
 end architecture structural;

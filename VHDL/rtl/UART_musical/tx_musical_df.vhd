@@ -58,17 +58,6 @@ architecture structural of tx_musical_df is
     );
   end component;
 
-  component mux4x1 is
-    port(
-        A: in  std_logic;
-        B: in  std_logic;
-        C: in  std_logic;
-        D: in  std_logic;
-        S: in  std_logic_vector(1 downto 0);
-        Y: out std_logic
-    );
-  end component mux4x1;
-
   signal dado_tx, dado_00, dado_01, dado_10, dado_11: std_logic_vector(7 downto 0);
   signal seletor, contagem: std_logic_vector(1 downto 0);
 
@@ -77,7 +66,7 @@ begin
   transmissor: tx_serial
     port map (
       clock           => clock,
-      reset           => limpa,
+      reset           => zera,
       partida         => enviar,
       dados_ascii     => dado_tx,
       saida_serial    => tx,
@@ -94,32 +83,26 @@ begin
     port map (
       clock     => clock,
       zera_as   => '0',
-      zera_s    => limpa,
+      zera_s    => zera,
       conta     => contaJ,
-      Q         => open,
+      Q         => contagem,
       fim       => fimJ,
       meio      => open,
       quarto    => open
     );
 
-  mux: mux4x1
-    port map (
-      A => dado_00,
-      B => dado_01,
-      C => dado_10,
-      D => dado_11,
-      S => seletor,
-      Y => dado_tx
-    );
-
   -- Seletor
   seletor(0) <= contagem(0) or configurar;
   seletor(1) <= contagem(1) or configurar;
+  dado_tx    <= dado_01 when seletor = "00" else
+                dado_10 when seletor = "01" else
+                dado_11 when seletor = "10" else
+                dado_00;
 
   -- Dados
-  dado_00 <= "00" & modo & dificuldade;
-  dado_01 <= "01" & perdeu & ganhou & notas;
-  dado_10 <= "10" & '0' & jogador & jogada;
-  dado_11 <= "11" & "00" & rodada;
+  dado_01 <= "00" & perdeu & ganhou & notas;
+  dado_10 <= "01" & '0' & jogador & jogada;
+  dado_11 <= "10" & "00" & rodada;
+  dado_00 <= "11" & modo & dificuldade;
 
 end architecture structural;

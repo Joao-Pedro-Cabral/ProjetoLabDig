@@ -4,6 +4,7 @@ modules = {
         "genius",
         "servomotor",
         "sensor",
-        "UART"
+        "UART",
+        "UART_musical"
     ]
 }

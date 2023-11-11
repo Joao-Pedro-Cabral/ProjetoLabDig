@@ -1,7 +1,7 @@
 
 action = "simulation"
 sim_tool = "modelsim"
-sim_top = "tx_serial" + "_tb"
+sim_top = "tx_musical" + "_tb"
 
 sim_post_cmd = "vsim -do vsim.do -voptargs=+acc " + sim_top
 

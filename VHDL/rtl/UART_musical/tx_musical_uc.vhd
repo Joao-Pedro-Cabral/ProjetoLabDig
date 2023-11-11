@@ -14,13 +14,14 @@ entity tx_musical_uc is
     configurar    : out std_logic;
     enviar        : out std_logic;
     contaJ        : out std_logic;
+    pronto        : out std_logic;
     db_estado     : out std_logic_vector(3 downto 0)
   );
 end entity tx_musical_uc;
 
 architecture fsm of tx_musical_uc is
 
-  type tipo_estado is (inicial, envia_config, espera_config, envia_jogada, espera_jogada, checa_jogada);
+  type tipo_estado is (inicial, envia_config, espera_config, envia_jogada, espera_jogada, checa_jogada, final);
   signal Eatual, Eprox: tipo_estado;
 
 begin
@@ -44,16 +45,17 @@ begin
                                 else Eprox <= inicial;
                                 end if;
         when envia_config =>    Eprox <= espera_config;
-        when espera_config =>   if fim_tx = '1' then Eprox <= inicial;
+        when espera_config =>   if fim_tx = '1' then Eprox <= final;
                                 else Eprox <= espera_config;
                                 end if;
         when envia_jogada =>    Eprox <= espera_jogada;
         when espera_jogada =>   if fim_tx = '1' then Eprox <= checa_jogada;
-                                else Eprox <= espera_config;
+                                else Eprox <= espera_jogada;
                                 end if;
-        when checa_jogada =>    if fimJ = '1' then Eprox <= inicial;
+        when checa_jogada =>    if fimJ = '1' then Eprox <= final;
                                 else Eprox <= envia_jogada;
                                 end if;
+        when final =>           Eprox <= inicial;
         when others =>          Eprox <= inicial;
       end case;
     end process;
@@ -64,18 +66,21 @@ begin
   with Eatual select
       configurar  <= '1' when envia_config | espera_config, '0' when others;
   with Eatual select
-      enviar      <= '1' when envia_jogada, '0' when others;
+      enviar      <= '1' when envia_config | envia_jogada, '0' when others;
   with Eatual select
       contaJ      <= '1' when checa_jogada, '0' when others;
+  with Eatual select
+      pronto      <= '1' when final, '0' when others;
 
   -- depuração
-  with present_state select
+  with Eatual select
     db_estado <= "0000" when inicial,
                  "0001" when envia_config,
                  "0010" when espera_config,
                  "0011" when envia_jogada,
                  "0100" when espera_jogada,
                  "0101" when checa_jogada,
+                 "1111" when final,
                  "1110" when others;
 
 end architecture fsm;
