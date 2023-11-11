@@ -32,10 +32,12 @@ architecture tb of genius_musical_tb2 is
       ativar                   : in  std_logic;
       chaves                   : in  std_logic_vector(5 downto 0);
       echo                     : in  std_logic;
+      rx                       : in  std_logic;
       sel_db                   : in  std_logic;
       trigger                  : out std_logic;
       pwm                      : out std_logic;
       pwm2                     : out std_logic;
+      tx                       : out std_logic;
       notas                    : out std_logic_vector(3 downto 0);
       jogador                  : out std_logic;
       ganhou                   : out std_logic;
@@ -46,15 +48,17 @@ architecture tb of genius_musical_tb2 is
       db_hex3                  : out std_logic_vector(6 downto 0);
       db_hex4                  : out std_logic_vector(6 downto 0);
       db_hex5                  : out std_logic_vector(6 downto 0);
-      db_modo                  : out std_logic_vector(1 downto 0)
+      db_modo                  : out std_logic_vector(1 downto 0);
+      db_dado_tx               : out std_logic;
+      db_dado_rx               : out std_logic
     );
   end component;
   
   ---- Declaracao de sinais de entrada para conectar o componente
   signal clk_in     : std_logic := '0';
   signal rst_in     : std_logic := '0';
-  signal iniciar_in : std_logic := '0';
-  signal ativar_in  : std_logic := '0';
+  signal iniciar_in : std_logic := '1';
+  signal ativar_in  : std_logic := '1';
   signal chaves_in  : std_logic_vector(5 downto 0) := "000000";
   signal echo_in    : std_logic := '0';
 
@@ -62,6 +66,7 @@ architecture tb of genius_musical_tb2 is
   signal trigger_out    : std_logic := '0';
   signal pwm_out        : std_logic := '0';
   signal pwm2_out       : std_logic := '0';
+  signal tx_out         : std_logic := '0';
   signal notas_out      : std_logic_vector(3 downto 0) := "0000";
   signal jogador_out    : std_logic := '0';
   signal ganhou_out     : std_logic := '0';
@@ -74,13 +79,17 @@ architecture tb of genius_musical_tb2 is
   -- Configuração de jogo
   constant rodada        : natural := 11; -- Nível de dificuldade
   constant modo          : natural := 1;
-  constant rodada_perder : natural := 5;
-  constant jogada_perder : natural := 4;
+  constant rodada_perder : natural := 4;
+  constant jogada_perder : natural := 3;
 
   -- Função para calcular a largura do echo
   function EchoLen(nota: std_logic_vector(3 downto 0) := "0000") return time is
   begin
-    return (2*to_integer(unsigned(nota)) - 1)*(58.82 us);
+    if nota = "0000" then
+      return 0 us;
+    else
+      return (2*to_integer(unsigned(nota)) - 1)*(58.82 us);
+    end if;
   end function;
 
   -- Array de testes
@@ -118,10 +127,12 @@ begin
         ativar          => ativar_in,
         chaves          => chaves_in,
         echo            => echo_in,
+        rx              => '1',
         sel_db          => '0',
         trigger         => trigger_out,
         pwm             => pwm_out,
         pwm2            => pwm2_out,
+        tx              => tx_out,
         notas           => notas_out,
         jogador         => jogador_out,
         ganhou          => ganhou_out,
@@ -132,7 +143,9 @@ begin
         db_hex3         => open,
         db_hex4         => open,
         db_hex5         => open,
-        db_modo         => open
+        db_modo         => open,
+        db_dado_tx      => open,
+        db_dado_rx      => open
       );
  
   ---- Gera sinais de estimulo para a simulacao
@@ -143,7 +156,6 @@ begin
     assert false report "inicio da simulacao" severity note;
     keep_simulating <= '1';  -- inicia geracao do sinal de clock
 
-    ativar_in <= '0';
     -- gera pulso de reset (1 periodo de clock)
     rst_in <= '1';
     wait for clockPeriod;
@@ -155,18 +167,18 @@ begin
 
     -- pulso do sinal de Iniciar (muda na borda de descida do clock)
     wait until falling_edge(clk_in);
-    iniciar_in <= '1';
-    wait until falling_edge(clk_in);
     iniciar_in <= '0';
+    wait until falling_edge(clk_in);
+    iniciar_in <= '1';
     wait for 10*clockPeriod;
     -- Escolher Modo e Dificuldade
     chaves_in  <= std_logic_vector(to_unsigned(16*modo + rodada-1, 6));
-    ativar_in   <= '1';
+    ativar_in  <= '0';
     wait for 10*clockPeriod;
-    chaves_in  <= "000000";
-    ativar_in   <= '0'; 
+    ativar_in  <= '1';
     wait for 505*clockPeriod;
-    tests(0) <= notas_out;
+    chaves_in  <= "000000";
+    tests(0)   <= notas_out;
     assert ganhou_out   = '0'    report "bad initial ganhou"                      severity error;
     assert perdeu_out   = '0'    report "bad initial perdeu"                      severity error;
     wait for 500*clockPeriod;
@@ -181,7 +193,7 @@ begin
         -- Perder
         if(k = jogada_perder and i = rodada_perder) then
           wait until falling_edge(trigger_out);
-          wait for 3*clockPeriod;
+          wait for 20000*clockPeriod;
           echo_in <= '1';
           wait for EchoLen(tests(k-1));
           echo_in <= '0';
@@ -197,7 +209,7 @@ begin
             -- Modo multijogador -> jogador escreve a próxima jogada
             if(modo = 2) then
               wait until falling_edge(trigger_out);
-              wait for 3*clockPeriod;
+              wait for 20000*clockPeriod;
               echo_in <= '1';
               wait for EchoLen(tests(k));
               echo_in <= '0';
@@ -205,7 +217,7 @@ begin
               assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(tests(k)))) severity error;
             -- Demais modos -> jogador ve a jogada, determinada pela FPGA, e imita ela
             else
-              wait for 1000*clockPeriod;
+              wait for 25000*clockPeriod;
               tests(k) <= notas_out;
               wait for 750*clockPeriod;
               assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(tests(k)))) severity error;
@@ -213,7 +225,7 @@ begin
             end if;
           else
             wait until falling_edge(trigger_out);
-            wait for 3*clockPeriod;
+            wait for 20000*clockPeriod;
             echo_in <= '1';
             wait for EchoLen(tests(k));
             echo_in <= '0';

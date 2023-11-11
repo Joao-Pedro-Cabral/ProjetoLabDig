@@ -11,6 +11,7 @@ entity tx_musical_uc is
     fim_tx        : in  std_logic;
     fimJ          : in  std_logic;
     zera          : out std_logic;
+    amostrar      : out std_logic;
     configurar    : out std_logic;
     enviar        : out std_logic;
     contaJ        : out std_logic;
@@ -45,7 +46,7 @@ begin
                                 else Eprox <= inicial;
                                 end if;
         when envia_config =>    Eprox <= espera_config;
-        when espera_config =>   if fim_tx = '1' then Eprox <= final;
+        when espera_config =>   if fim_tx = '1' then Eprox <= envia_jogada;
                                 else Eprox <= espera_config;
                                 end if;
         when envia_jogada =>    Eprox <= espera_jogada;
@@ -71,6 +72,8 @@ begin
       contaJ      <= '1' when checa_jogada, '0' when others;
   with Eatual select
       pronto      <= '1' when final, '0' when others;
+
+  amostrar  <= (enviar_config or enviar_jogada) when Eatual=inicial else '0';
 
   -- depuração
   with Eatual select

@@ -8,6 +8,7 @@ entity tx_musical_df is
   port (
     clock         : in  std_logic;
     zera          : in  std_logic;
+    amostrar      : in  std_logic;
     configurar    : in  std_logic;
     enviar        : in  std_logic;
     contaJ        : in  std_logic;
@@ -59,6 +60,9 @@ architecture structural of tx_musical_df is
   end component;
 
   signal dado_tx, dado_00, dado_01, dado_10, dado_11: std_logic_vector(7 downto 0);
+  signal modo2 : std_logic_vector(1 downto 0);
+  signal dificuldade2, notas2, jogada2, rodada2: std_logic_vector(3 downto 0);
+  signal perdeu2, ganhou2, jogador2: std_logic;
   signal seletor, contagem: std_logic_vector(1 downto 0);
 
 begin
@@ -91,6 +95,23 @@ begin
       quarto    => open
     );
 
+  -- Amostrar as entradas
+  process(clock, amostrar)
+    begin
+      if (clock'event and clock='1') then
+        if (amostrar='1') then
+          modo2        <= modo;
+          dificuldade2 <= dificuldade;
+          notas2       <= notas;
+          jogada2      <= jogada;
+          rodada2      <= rodada;
+          perdeu2      <= perdeu;
+          ganhou2      <= ganhou;
+          jogador2     <= jogador;
+        end if;
+      end if;
+    end process;
+
   -- Seletor
   seletor(0) <= contagem(0) or configurar;
   seletor(1) <= contagem(1) or configurar;
@@ -100,9 +121,9 @@ begin
                 dado_00;
 
   -- Dados
-  dado_01 <= "00" & perdeu & ganhou & notas;
-  dado_10 <= "01" & '0' & jogador & jogada;
-  dado_11 <= "10" & "00" & rodada;
-  dado_00 <= "11" & modo & dificuldade;
+  dado_01 <= "00" & perdeu2 & ganhou2 & notas2;
+  dado_10 <= "01" & '0' & jogador2 & jogada2;
+  dado_11 <= "10" & "00" & rodada2;
+  dado_00 <= "11" & modo2 & dificuldade2;
 
 end architecture structural;

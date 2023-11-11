@@ -29,6 +29,7 @@ architecture structural of tx_musical is
     port (
       clock         : in  std_logic;
       zera          : in  std_logic;
+      amostrar      : in  std_logic;
       configurar    : in  std_logic;
       enviar        : in  std_logic;
       contaJ        : in  std_logic;
@@ -56,6 +57,7 @@ architecture structural of tx_musical is
       fim_tx        : in  std_logic;
       fimJ          : in  std_logic;
       zera          : out std_logic;
+      amostrar      : out std_logic;
       configurar    : out std_logic;
       enviar        : out std_logic;
       contaJ        : out std_logic;
@@ -64,7 +66,7 @@ architecture structural of tx_musical is
     );
   end component tx_musical_uc;
 
-  signal zera, configurar, enviar, contaJ, fim_tx, fimJ: std_logic;
+  signal zera, amostrar, configurar, enviar, contaJ, fim_tx, fimJ: std_logic;
 
 begin
 
@@ -72,6 +74,7 @@ begin
     port map (
       clock       => clock,
       zera        => zera,
+      amostrar    => amostrar,
       configurar  => configurar,
       enviar      => enviar,
       contaJ      => contaJ,
@@ -98,6 +101,7 @@ begin
       fim_tx        => fim_tx,
       fimJ          => fimJ,
       zera          => zera,
+      amostrar      => amostrar,
       configurar    => configurar,
       enviar        => enviar,
       contaJ        => contaJ,

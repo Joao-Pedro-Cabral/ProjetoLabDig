@@ -168,6 +168,14 @@ architecture tb of tx_musical_tb is
           enviar_config_in <= vetor_teste(i).enviar_config;
           enviar_jogada_in <= vetor_teste(i).enviar_jogada;
           wait for clockPeriod;
+          modo_in          <= "00";
+          dificuldade_in   <= "0000";
+          perdeu_in        <= '0';
+          ganhou_in        <= '0';
+          notas_in         <= "0000";
+          jogador_in       <= '0';
+          jogada_in        <= "0000";
+          rodada_in        <= "0000";
           enviar_config_in <= '0';
           enviar_jogada_in <= '0';
       
@@ -178,26 +186,25 @@ architecture tb of tx_musical_tb is
             dado_esperado <= "11" & vetor_teste(i).modo & vetor_teste(i).dificuldade;
             wait for 5*clockPeriod;
             assert dado_recebido = dado_esperado report "dado incorreto" severity error;
-          else
-            assert false report "jogada" severity note;
-            j <= 0;
-            while j < 3 loop
-              assert false report "j: " & integer'image(j) severity note;
-              wait until pronto_rx = '1';
-              -- assert false report "pronto rx!" severity note;
-              if j = 0 then
-                dado_esperado <= "00" & vetor_teste(i).perdeu & vetor_teste(i).ganhou & vetor_teste(i).notas;
-              elsif j = 1 then
-                dado_esperado <= "01" & '0' & vetor_teste(i).jogador & vetor_teste(i).jogada;
-              else
-                dado_esperado <= "10" & "00" & vetor_teste(i).rodada;
-              end if;
-              wait for 5*clockPeriod;
-              assert dado_recebido = dado_esperado report "dado incorreto" severity error;
-              j <= j + 1;
-              wait for 5*clockPeriod;
-            end loop;
           end if;
+          assert false report "jogada" severity note;
+          j <= 0;
+          while j < 3 loop
+            assert false report "j: " & integer'image(j) severity note;
+            wait until pronto_rx = '1';
+            -- assert false report "pronto rx!" severity note;
+            if j = 0 then
+              dado_esperado <= "00" & vetor_teste(i).perdeu & vetor_teste(i).ganhou & vetor_teste(i).notas;
+            elsif j = 1 then
+              dado_esperado <= "01" & '0' & vetor_teste(i).jogador & vetor_teste(i).jogada;
+            else
+              dado_esperado <= "10" & "00" & vetor_teste(i).rodada;
+            end if;
+            wait for 5*clockPeriod;
+            assert dado_recebido = dado_esperado report "dado incorreto" severity error;
+            j <= j + 1;
+            wait for 5*clockPeriod;
+          end loop;
           
           --assert false report "esperando" severity note;
           -- intervalo entre casos de teste

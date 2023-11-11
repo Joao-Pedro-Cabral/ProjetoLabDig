@@ -32,6 +32,7 @@ entity fluxo_dados is
           ativar                   : in  std_logic;
           chaves                   : in  std_logic_vector(5 downto 0);
           echo                     : in  std_logic;
+          rx                       : in  std_logic;
           zeraCR                   : in  std_logic;
           zeraI                    : in  std_logic;
           zeraE                    : in  std_logic;
@@ -42,6 +43,8 @@ entity fluxo_dados is
           contaE                   : in  std_logic;
           contaT                   : in  std_logic;
           medir_nota               : in  std_logic;
+          enviar_config            : in  std_logic;
+          enviar_jogada            : in  std_logic;
           escreve                  : in  std_logic;
           escreve_aleatorio        : in  std_logic;
           registraRC               : in  std_logic;
@@ -50,9 +53,11 @@ entity fluxo_dados is
           ganhou                   : in  std_logic;
           perdeu                   : in  std_logic;
 --Saidas
+          iniciar                  : out std_logic;
           trigger                  : out std_logic;
           pwm                      : out std_logic;
           pwm2                     : out std_logic;
+          tx                       : out std_logic;
           notas                    : out std_logic_vector(3 downto 0);
           modo                     : out std_logic_vector(1 downto 0);
           enderecoIgualRodada      : out std_logic;
@@ -69,7 +74,9 @@ entity fluxo_dados is
           db_contagem              : out std_logic_vector(3 downto 0);
           db_memoria               : out std_logic_vector(3 downto 0);
           db_sensor                : out std_logic_vector(3 downto 0);
-          db_medida                : out std_logic_vector(11 downto 0)
+          db_medida                : out std_logic_vector(11 downto 0);
+          db_dado_tx               : out std_logic;
+          db_dado_rx               : out std_logic
     );
 end entity;
 
@@ -91,11 +98,14 @@ architecture estrutural of fluxo_dados is
   signal s_not_zeraCR    : std_logic;
   signal s_not_zeraE     : std_logic;
   signal s_not_escreve   : std_logic;
-  signal medida_bcd      : std_logic_vector(11 downto 0);
-  signal medida_nota     : std_logic_vector(3 downto 0);
+  signal s_not_ativar    : std_logic;
+  signal s_medida_nota, medida_nota     : std_logic_vector(3 downto 0);
   signal pronto_sensor   : std_logic;
   signal posicao_servo, posicao_servo2 : std_logic_vector(1 downto 0);
   signal venceu1, venceu2 : std_logic;
+  signal configurado_ed, configurado_rx, jogada_rx: std_logic;
+  signal s_config, configuracao_rx  : std_logic_vector(5 downto 0);
+  signal s_notas,notas_rx : std_logic_vector(3 downto 0);
 
   component contador_163
     port (
@@ -214,6 +224,42 @@ architecture estrutural of fluxo_dados is
     );
   end component controle_servo;
 
+  component rx_musical is
+    port (
+      clock         : in  std_logic;
+      reset         : in  std_logic;
+      rx            : in  std_logic;
+      iniciar       : out std_logic;
+      configurado   : out std_logic;
+      configuracao  : out std_logic_vector(5 downto 0);
+      jogada        : out std_logic;
+      notas         : out std_logic_vector(3 downto 0);
+      db_dado_rx    : out std_logic;
+      db_estado     : out std_logic_vector(3 downto 0)
+    );
+  end component rx_musical;
+
+  component tx_musical is
+    port (
+      clock         : in  std_logic;
+      reset         : in  std_logic;
+      enviar_config : in  std_logic;
+      enviar_jogada : in  std_logic;
+      modo          : in  std_logic_vector(1 downto 0);
+      dificuldade   : in  std_logic_vector(3 downto 0);
+      perdeu        : in  std_logic;
+      ganhou        : in  std_logic;
+      notas         : in  std_logic_vector(3 downto 0);
+      jogador       : in  std_logic;
+      jogada        : in  std_logic_vector(3 downto 0);
+      rodada        : in  std_logic_vector(3 downto 0);
+      tx            : out std_logic;
+      pronto        : out std_logic;
+      db_dado_tx    : out std_logic;
+      db_estado     : out std_logic_vector(3 downto 0)
+    );
+  end component tx_musical;
+
 begin
 
   -- sinais de controle ativos em alto
@@ -221,6 +267,7 @@ begin
   s_not_zeraCR   <= not zeraCR;
   s_not_zeraE    <= not zeraE;
   s_not_escreve  <= not escreve;
+  s_not_ativar   <= not ativar;
 
   contador_rodada: contador_163
     port map (
@@ -331,7 +378,7 @@ begin
         clock  => clock,
         clear  => limpa,
         enable => registraRC,
-        D      => medida_nota,
+        D      => s_medida_nota,
         Q      => s_jogada
     );
 
@@ -355,7 +402,7 @@ begin
       clock => clock,
       reset => limpa,
       sinal => ativar,
-      pulso => configurado
+      pulso => configurado_ed
     );
 
   temporizador: contador_m
@@ -376,7 +423,7 @@ begin
 
   temporizador_inicial: contador_m
       generic map(
-        M => 1000 -- simulacao
+        M => 25000 -- simulacao
         -- M => 50000000 --quartus
       )
       port map(
@@ -398,7 +445,7 @@ begin
       clock  => clock,
       clear  => limpa,
       enable => registraConfig,
-      D      => chaves(3 downto 0),
+      D      => s_config(3 downto 0),
       Q      => seletor_rodada
     );
 
@@ -410,7 +457,7 @@ begin
       clock  => clock,
       clear  => limpa,
       enable => registraConfig,
-      D      => chaves(5 downto 4),
+      D      => s_config(5 downto 4),
       Q      => seletor_modo
     );
    
@@ -437,6 +484,40 @@ begin
       controle => pwm2
     );
 
+  receptor: rx_musical
+    port map (
+      clock         => clock,
+      reset         => limpa,
+      rx            => rx,
+      iniciar       => iniciar,
+      configurado   => configurado_rx,
+      configuracao  => configuracao_rx,
+      jogada        => jogada_rx,
+      notas         => notas_rx,
+      db_dado_rx    => db_dado_rx,
+      db_estado     => open
+    );
+
+  transmissor: tx_musical
+    port map (
+      clock         => clock,
+      reset         => limpa,
+      enviar_config => enviar_config,
+      enviar_jogada => enviar_jogada,
+      modo          => seletor_modo,
+      dificuldade   => seletor_rodada,
+      perdeu        => perdeu,
+      ganhou        => ganhou,
+      notas         => s_notas,
+      jogador       => s_rodada(0),
+      jogada        => s_endereco,
+      rodada        => s_rodada,
+      tx            => tx,
+      pronto        => open,
+      db_dado_tx    => db_dado_tx,
+      db_estado     => open
+    );
+
   -- Determinação da posição do servo
   venceu1 <= (((not seletor_modo(1)) or seletor_modo(0)) and ganhou) or 
              ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and (not s_rodada(0))) or (perdeu and s_rodada(0))));
@@ -447,6 +528,10 @@ begin
              ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and s_rodada(0)) or (perdeu and (not s_rodada(0)))));
   posicao_servo2(1) <= venceu2;
   posicao_servo2(0) <= venceu2;
+
+  -- Muxes para escolha entre físico/Digital Twin
+  s_config      <= configuracao_rx when configurado_rx = '1' else chaves;
+  s_medida_nota <= notas_rx when jogada_rx = '1' else medida_nota;
 
   -- Determinação dos possíveis fimL
   s_fimL(0)  <= s_rodada(0); -- Inatingível 
@@ -468,10 +553,12 @@ begin
 
   -- saidas
   -- ESP
-  notas           <= s_dado when notaSel='1' else s_jogada;
+  s_notas         <= s_dado when notaSel='1' else s_jogada;
+  notas           <= s_notas;
   -- UC
+  configurado     <= configurado_ed or configurado_rx;
   jogador         <= s_rodada(0);
-  jogada          <= pronto_sensor;
+  jogada          <= pronto_sensor or jogada_rx;
   modo            <= seletor_modo;
   -- debug
   db_rodada       <= s_rodada;
