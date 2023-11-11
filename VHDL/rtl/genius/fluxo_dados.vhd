@@ -103,7 +103,7 @@ architecture estrutural of fluxo_dados is
   signal pronto_sensor   : std_logic;
   signal posicao_servo, posicao_servo2 : std_logic_vector(1 downto 0);
   signal venceu1, venceu2 : std_logic;
-  signal configurado_ed, configurado_rx, jogada_rx: std_logic;
+  signal configurado_ed, configurado_rx, jogada_rx, configurado_rx2, jogada_rx2: std_logic;
   signal s_config, configuracao_rx  : std_logic_vector(5 downto 0);
   signal s_notas,notas_rx : std_logic_vector(3 downto 0);
 
@@ -529,9 +529,23 @@ begin
   posicao_servo2(1) <= venceu2;
   posicao_servo2(0) <= venceu2;
 
+
+  -- Bufferizo os sinais do receptor para usar no ciclo seguinte
+  process(clock, limpa) begin
+    if (clock'event and clock='1') then
+      if (limpa = '1') then
+        configurado_rx2 <= '0';
+        jogada_rx2      <= '0';
+      else
+        configurado_rx2 <= configurado_rx;
+        jogada_rx2      <= jogada_rx;
+      end if;
+    end if;
+  end process;
+
   -- Muxes para escolha entre físico/Digital Twin
-  s_config      <= configuracao_rx when configurado_rx = '1' else chaves;
-  s_medida_nota <= notas_rx when jogada_rx = '1' else medida_nota;
+  s_config      <= configuracao_rx when configurado_rx2 = '1' else chaves;
+  s_medida_nota <= notas_rx when jogada_rx2 = '1' else medida_nota;
 
   -- Determinação dos possíveis fimL
   s_fimL(0)  <= s_rodada(0); -- Inatingível 

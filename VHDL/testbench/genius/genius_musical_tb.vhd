@@ -53,7 +53,21 @@ architecture tb of genius_musical_tb is
       db_dado_rx               : out std_logic
     );
   end component;
-  
+
+  component tx_serial
+    port (
+        clock           : in  std_logic;
+        reset           : in  std_logic;
+        partida         : in  std_logic;
+        dados_ascii     : in  std_logic_vector(7 downto 0);
+        saida_serial    : out std_logic;
+        pronto          : out std_logic;
+        db_partida      : out std_logic;
+        db_saida_serial : out std_logic;
+        db_estado       : out std_logic_vector(3 downto 0)
+    );
+  end component;
+
   ---- Declaracao de sinais de entrada para conectar o componente
   signal clk_in     : std_logic := '0';
   signal rst_in     : std_logic := '0';
@@ -61,6 +75,7 @@ architecture tb of genius_musical_tb is
   signal ativar_in  : std_logic := '1';
   signal chaves_in  : std_logic_vector(5 downto 0) := "000000";
   signal echo_in    : std_logic := '0';
+  signal rx_in      : std_logic := '0';
 
   ---- Declaracao dos sinais de saida
   signal trigger_out    : std_logic := '0';
@@ -78,7 +93,19 @@ architecture tb of genius_musical_tb is
 
   -- Configuração de jogo
   constant rodada : natural := 3; -- Nível de dificuldade
-  constant modo   : natural := 1;
+  constant modo   : natural := 2;
+
+  -- Transmissor
+  signal partida_in       : std_logic := '0';
+  signal enviar_config_in : std_logic := '0';
+  signal enviar_jogada_in : std_logic := '0';
+  signal modo_in          : std_logic_vector(1 downto 0) := "00";
+  signal dificuldade_in   : std_logic_vector(3 downto 0) := "0000";
+  signal notas_in         : std_logic_vector(3 downto 0) := "0000";
+  signal dados_tx         : std_logic_vector(7 downto 0) := "00000000";
+  signal config           : std_logic_vector(7 downto 0) := "00000000";
+  signal nota             : std_logic_vector(7 downto 0) := "00000000";
+  signal pronto_tx        : std_logic := '0';
 
   -- Função para calcular a largura do echo
   function EchoLen(nota: std_logic_vector(3 downto 0) := "0000") return time is
@@ -126,7 +153,7 @@ begin
           ativar          => ativar_in,
           chaves          => chaves_in,
           echo            => echo_in,
-          rx              => '1',
+          rx              => rx_in,
           sel_db          => '0',
           trigger         => trigger_out,
           pwm             => pwm_out,
@@ -146,7 +173,35 @@ begin
           db_dado_tx      => open,
           db_dado_rx      => open
        );
- 
+
+  transmissor: tx_serial
+      port map ( 
+          clock           => clk_in,
+          reset           => rst_in,
+          partida         => partida_in,
+          dados_ascii     => dados_tx,
+          saida_serial    => rx_in,
+          pronto          => pronto_tx,
+          db_partida      => open,
+          db_saida_serial => open,
+          db_estado       => open
+     );
+
+  modo_in        <= std_logic_vector(to_unsigned(modo, 2));
+  dificuldade_in <= std_logic_vector(to_unsigned(rodada-1, 4));
+  config         <= "11" & modo_in & dificuldade_in;
+  nota           <= "00" & "00" & notas_in;
+  partida_in     <= enviar_config_in or enviar_jogada_in;
+  process(clk_in, enviar_config_in, enviar_jogada_in) is begin
+    if(clk_in'event and clk_in = '1') then
+      if(enviar_config_in = '1') then
+        dados_tx <= config;
+      elsif(enviar_jogada_in = '1') then
+        dados_tx <= nota;
+      end if;
+    end if;
+  end process;
+
   ---- Gera sinais de estimulo para a simulacao
   stimulus: process is
   begin
@@ -171,10 +226,14 @@ begin
     iniciar_in <= '1';
     wait for 10*clockPeriod;
     -- Escolher Modo e Dificuldade
-    chaves_in  <= std_logic_vector(to_unsigned(16*modo + rodada-1, 6));
-    ativar_in  <= '0';
-    wait for 10*clockPeriod;
-    ativar_in  <= '1';
+    enviar_config_in <= '1';
+    wait for clockPeriod;
+    enviar_config_in <= '0';
+    wait until pronto_tx = '1';
+    -- chaves_in  <= std_logic_vector(to_unsigned(16*modo + rodada-1, 6));
+    -- ativar_in  <= '0';
+    -- wait for 10*clockPeriod;
+    -- ativar_in  <= '1';
     wait for 505*clockPeriod;
     chaves_in  <= "000000";
     tests(0)   <= notas_out;
@@ -190,10 +249,14 @@ begin
         for k in 0 to i loop
           assert false report "Jogada " & integer'image(k) severity note;
           wait until falling_edge(trigger_out);
+          notas_in <= tests(k);
+          enviar_jogada_in <= '1';
+          wait for clockPeriod;
+          enviar_jogada_in <= '0';
           wait for 20000*clockPeriod;
-          echo_in <= '1';
-          wait for EchoLen(tests(k));
-          echo_in <= '0';
+          -- echo_in <= '1';
+          -- wait for EchoLen(tests(k));
+          -- echo_in <= '0';
           wait for 10*clockPeriod;
           assert notas_out = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(tests(k)))) severity error;
           -- última jogada da última rodada -> ganhou!
@@ -216,10 +279,14 @@ begin
             -- Modo multijogador -> jogador escreve a próxima jogada
             if(modo = 2) then
               wait until falling_edge(trigger_out);
+              notas_in <= tests(k);
+              enviar_jogada_in <= '1';
+              wait for clockPeriod;
+              enviar_jogada_in <= '0';
               wait for 20000*clockPeriod;
-              echo_in <= '1';
-              wait for EchoLen(tests(k));
-              echo_in <= '0';
+              -- echo_in <= '1';
+              -- wait for EchoLen(tests(k));
+              -- echo_in <= '0';
               wait for 10*clockPeriod;
               assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(tests(k)))) severity error;
             -- Demais modos -> jogador ve a jogada, determinada pela FPGA, e imita ela
@@ -232,10 +299,14 @@ begin
             end if;
           else
             wait until falling_edge(trigger_out);
+            notas_in <= tests(k);
+            enviar_jogada_in <= '1';
+            wait for clockPeriod;
+            enviar_jogada_in <= '0';
             wait for 20000*clockPeriod;
-            echo_in <= '1';
-            wait for EchoLen(tests(k));
-            echo_in <= '0';
+            --echo_in <= '1';
+            --wait for EchoLen(tests(k));
+            --echo_in <= '0';
             wait for 10*clockPeriod;
             assert notas_out     = tests(k) report "bad nota = " & integer'image(to_integer(unsigned(tests(k)))) severity error;
           end if;
