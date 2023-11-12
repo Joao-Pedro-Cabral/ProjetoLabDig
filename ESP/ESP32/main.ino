@@ -67,7 +67,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     nota = (payload[3] - 48) + 2 * (payload[2] - 48) + 4 * (payload[1] - 48) +
            8 * (payload[0] - 48);
     Serial.println(nota);
-    nota_tx = 0x40 + nota;
+    nota_tx = nota;
     Serial.println(nota_tx);
     Serial2.write(nota_tx);
   }
@@ -92,10 +92,38 @@ void connect_mqtt() {
       delay(tempoMQTT);
     }
   }
+  // Publicações
+  client.publish((user + "/Nota").c_str(), "0");
+  client.publish((user + "/Rodada").c_str(), "0");
+  client.publish((user + "/Jogada").c_str(), "0");
+  client.publish((user + "/Configuracao").c_str(), "0");
   // Inscrições
   client.subscribe((user + "/Configuracao").c_str());
-  client.subscribe((user + "/Botoes").c_str());
   client.subscribe((user + "/Nota").c_str());
+}
+
+void send_mqtt_data() {
+  int byteRead = Serial2.read();  // Lê um byte da porta Serial2
+  int index = byteRead >> 6;
+  int dado = byteRead - (index << 6);
+  char msgm[3];
+  Serial.print("Byte lido: ");
+  Serial.println(byteRead);
+  Serial.print("Index: ");
+  Serial.println(index);
+  Serial.print("Dado: ");
+  Serial.println(dado);
+  sprintf(msgm, "%d", dado);
+  Serial.print("Texto convertido: ");
+  Serial.println(msgm);
+  if (index == 0)
+    client.publish((user + "/Nota").c_str(), msgm);
+  else if (index == 1)
+    client.publish((user + "/Rodada").c_str(), msgm);
+  else if (index == 2)
+    client.publish((user + "/Jogada").c_str(), msgm);
+  else if (index == 3)
+    client.publish((user + "/Configuracao").c_str(), msgm);
 }
 
 void setup() {
@@ -111,11 +139,7 @@ void loop() {
   client.loop();
   // Serial.println("Estou vivo!");
   client.publish((user + "/homehello").c_str(), "hello");
-  if (Serial2.available()) {
-    int byteRead = Serial2.read();  // Lê um byte da porta Serial2
-    Serial.print("Byte lido: ");
-    Serial.println(byteRead);
-  }
+  if (Serial2.available()) send_mqtt_data();
 
   delay(tempoMQTT);
 }
