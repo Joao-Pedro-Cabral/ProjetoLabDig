@@ -10,8 +10,7 @@ entity tx_musical is
     enviar_jogada : in  std_logic;
     modo          : in  std_logic_vector(1 downto 0);
     dificuldade   : in  std_logic_vector(3 downto 0);
-    perdeu        : in  std_logic;
-    ganhou        : in  std_logic;
+    estado        : in  std_logic_vector(1 downto 0);
     notas         : in  std_logic_vector(3 downto 0);
     jogador       : in  std_logic;
     jogada        : in  std_logic_vector(3 downto 0);
@@ -35,8 +34,7 @@ architecture structural of tx_musical is
       contaJ        : in  std_logic;
       modo          : in  std_logic_vector(1 downto 0);
       dificuldade   : in  std_logic_vector(3 downto 0);
-      perdeu        : in  std_logic;
-      ganhou        : in  std_logic;
+      estado        : in  std_logic_vector(1 downto 0);
       notas         : in  std_logic_vector(3 downto 0);
       jogador       : in  std_logic;
       jogada        : in  std_logic_vector(3 downto 0);
@@ -80,8 +78,7 @@ begin
       contaJ      => contaJ,
       modo        => modo,
       dificuldade => dificuldade,
-      perdeu      => perdeu,
-      ganhou      => ganhou,
+      estado      => estado,
       notas       => notas,
       jogador     => jogador,
       jogada      => jogada,

@@ -17,8 +17,7 @@ architecture tb of tx_musical_tb is
         enviar_jogada : in  std_logic;
         modo          : in  std_logic_vector(1 downto 0);
         dificuldade   : in  std_logic_vector(3 downto 0);
-        perdeu        : in  std_logic;
-        ganhou        : in  std_logic;
+        estado        : in  std_logic_vector(1 downto 0);
         notas         : in  std_logic_vector(3 downto 0);
         jogador       : in  std_logic;
         jogada        : in  std_logic_vector(3 downto 0);
@@ -51,8 +50,7 @@ architecture tb of tx_musical_tb is
     signal enviar_jogada_in : std_logic := '0';
     signal modo_in          : std_logic_vector(1 downto 0) := "00";
     signal dificuldade_in   : std_logic_vector(3 downto 0) := "0000";
-    signal perdeu_in        : std_logic;
-    signal ganhou_in        : std_logic;
+    signal estado_in        : std_logic_vector(1 downto 0) := "00";
     signal notas_in         : std_logic_vector (3 downto 0) := "0000";
     signal jogador_in       : std_logic;
     signal jogada_in        : std_logic_vector(3 downto 0);
@@ -77,8 +75,7 @@ architecture tb of tx_musical_tb is
       enviar_jogada : std_logic;
       modo          : std_logic_vector(1 downto 0);
       dificuldade   : std_logic_vector(3 downto 0);
-      perdeu        : std_logic;
-      ganhou        : std_logic;
+      estado        : std_logic_vector(1 downto 0);
       notas         : std_logic_vector(3 downto 0);
       jogador       : std_logic;
       jogada        : std_logic_vector(3 downto 0);
@@ -86,10 +83,10 @@ architecture tb of tx_musical_tb is
     end record;
     type caso_teste_array is array (natural range <>) of caso_teste_type;
     constant vetor_teste: caso_teste_array :=
-       ((1, '1', '0', "11", "0001", '0', '0', "0101", '1', "1101", "1000"),
-        (2, '0', '1', "01", "0010", '0', '1', "0110", '0', "1110", "1001"),
-        (3, '1', '0', "10", "0011", '1', '0', "0111", '1', "1111", "1010"),
-        (4, '0', '1', "00", "0100", '1', '0', "1000", '0', "0000", "1011"));
+       ((1, '1', '0', "11", "0001", ("00"), "0101", '1', "1101", "1000"),
+        (2, '0', '1', "01", "0010", ("01"), "0110", '0', "1110", "1001"),
+        (3, '1', '0', "10", "0011", ("10"), "0111", '1', "1111", "1010"),
+        (4, '0', '1', "00", "0100", ("11"), "1000", '0', "0000", "1011"));
   
   begin
     -- Gerador de clock: executa enquanto 'keep_simulating = 1', com o período
@@ -106,8 +103,7 @@ architecture tb of tx_musical_tb is
              enviar_jogada   => enviar_jogada_in,
              modo            => modo_in,
              dificuldade     => dificuldade_in,
-             perdeu          => perdeu_in,
-             ganhou          => ganhou_in,
+             estado          => estado_in,
              notas           => notas_in,
              jogador         => jogador_in,
              jogada          => jogada_in,
@@ -159,8 +155,7 @@ architecture tb of tx_musical_tb is
           wait until falling_edge(clock_in);
           modo_in          <= vetor_teste(i).modo;
           dificuldade_in   <= vetor_teste(i).dificuldade;
-          perdeu_in        <= vetor_teste(i).perdeu;
-          ganhou_in        <= vetor_teste(i).ganhou;
+          estado_in        <= vetor_teste(i).estado;
           notas_in         <= vetor_teste(i).notas;
           jogador_in       <= vetor_teste(i).jogador;
           jogada_in        <= vetor_teste(i).jogada;
@@ -170,8 +165,7 @@ architecture tb of tx_musical_tb is
           wait for clockPeriod;
           modo_in          <= "00";
           dificuldade_in   <= "0000";
-          perdeu_in        <= '0';
-          ganhou_in        <= '0';
+          estado_in        <= "00";
           notas_in         <= "0000";
           jogador_in       <= '0';
           jogada_in        <= "0000";
@@ -194,7 +188,7 @@ architecture tb of tx_musical_tb is
             wait until pronto_rx = '1';
             -- assert false report "pronto rx!" severity note;
             if j = 0 then
-              dado_esperado <= "00" & vetor_teste(i).perdeu & vetor_teste(i).ganhou & vetor_teste(i).notas;
+              dado_esperado <= "00" & vetor_teste(i).estado & vetor_teste(i).notas;
             elsif j = 1 then
               dado_esperado <= "01" & '0' & vetor_teste(i).jogador & vetor_teste(i).jogada;
             else

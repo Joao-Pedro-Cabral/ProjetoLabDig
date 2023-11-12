@@ -42,6 +42,7 @@ architecture tb of genius_musical_tb3 is
       jogador                  : out std_logic;
       ganhou                   : out std_logic;
       perdeu                   : out std_logic;
+      perdeuT                  : out std_logic;
       db_hex0                  : out std_logic_vector(6 downto 0);
       db_hex1                  : out std_logic_vector(6 downto 0);
       db_hex2                  : out std_logic_vector(6 downto 0);
@@ -86,6 +87,7 @@ architecture tb of genius_musical_tb3 is
   signal jogador_out    : std_logic := '0';
   signal ganhou_out     : std_logic := '0';
   signal perdeu_out     : std_logic := '0';
+  signal perdeuT_out    : std_logic := '0';
 
   -- Configurações do clock
   signal keep_simulating: std_logic := '0'; -- delimita o tempo de geração do clock
@@ -164,6 +166,7 @@ begin
         jogador         => jogador_out,
         ganhou          => ganhou_out,
         perdeu          => perdeu_out,
+        perdeuT         => perdeuT_out,
         db_hex0         => open,
         db_hex1         => open,
         db_hex2         => open,
@@ -239,6 +242,7 @@ begin
     tests(0)   <= notas_out;
     assert ganhou_out   = '0'    report "bad initial ganhou"                      severity error;
     assert perdeu_out   = '0'    report "bad initial perdeu"                      severity error;
+    assert perdeuT_out  = '0'    report "bad initial perdeuT"                     severity error;
     wait for 500*clockPeriod;
     -- Cada iteração corresponde a uma rodada
     for i in 0 to rodada - 1 loop
@@ -251,10 +255,11 @@ begin
         if(k = jogada_perder and i = rodada_perder) then
           wait for 800000*clockPeriod;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
-          assert perdeu_out   = '1'      report "bad  perdeu"                             severity error;
+          assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
+          assert perdeuT_out  = '1'      report "bad  perdeuT"                            severity error;
           wait for 5000*clockPeriod;
         -- Continua jogando até perder
-        elsif(perdeu_out = '0') then
+        elsif(perdeuT_out = '0') then
           if(k = i + 1) then
             -- Modo multijogador -> jogador escreve a próxima jogada
             if(modo = 2) then
@@ -293,6 +298,7 @@ begin
           wait for 15*clockPeriod;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
+          assert perdeuT_out  = '0'      report "bad  perdeuT"                            severity error;
           wait for 9*clockPeriod;
         end if; 
       end loop;

@@ -14,8 +14,7 @@ entity tx_musical_df is
     contaJ        : in  std_logic;
     modo          : in  std_logic_vector(1 downto 0);
     dificuldade   : in  std_logic_vector(3 downto 0);
-    perdeu        : in  std_logic;
-    ganhou        : in  std_logic;
+    estado        : in  std_logic_vector(1 downto 0);
     notas         : in  std_logic_vector(3 downto 0);
     jogador       : in  std_logic;
     jogada        : in  std_logic_vector(3 downto 0);
@@ -62,8 +61,8 @@ architecture structural of tx_musical_df is
   signal dado_tx, dado_00, dado_01, dado_10, dado_11: std_logic_vector(7 downto 0);
   signal modo2 : std_logic_vector(1 downto 0);
   signal dificuldade2, notas2, jogada2, rodada2: std_logic_vector(3 downto 0);
-  signal perdeu2, ganhou2, jogador2: std_logic;
-  signal seletor, contagem: std_logic_vector(1 downto 0);
+  signal jogador2: std_logic;
+  signal estado2, seletor, contagem: std_logic_vector(1 downto 0);
 
 begin
 
@@ -105,8 +104,7 @@ begin
           notas2       <= notas;
           jogada2      <= jogada;
           rodada2      <= rodada;
-          perdeu2      <= perdeu;
-          ganhou2      <= ganhou;
+          estado2      <= estado;
           jogador2     <= jogador;
         end if;
       end if;
@@ -121,7 +119,7 @@ begin
                 dado_00;
 
   -- Dados
-  dado_01 <= "00" & perdeu2 & ganhou2 & notas2;
+  dado_01 <= "00" & estado2 & notas2;
   dado_10 <= "01" & '0' & jogador2 & jogada2;
   dado_11 <= "10" & "00" & rodada2;
   dado_00 <= "11" & modo2 & dificuldade2;

@@ -34,6 +34,7 @@ entity genius_musical is
         jogador                  : out std_logic;
         ganhou                   : out std_logic;
         perdeu                   : out std_logic;
+        perdeuT                  : out std_logic;
         db_hex0                  : out std_logic_vector(6 downto 0);
         db_hex1                  : out std_logic_vector(6 downto 0);
         db_hex2                  : out std_logic_vector(6 downto 0);
@@ -74,6 +75,7 @@ architecture inicial of genius_musical is
             notaSel                  : in  std_logic;
             ganhou                   : in  std_logic;
             perdeu                   : in  std_logic;
+            perdeuT                  : in  std_logic;
             iniciar                  : out std_logic;
             trigger                  : out std_logic;
             pwm                      : out std_logic;
@@ -131,6 +133,7 @@ architecture inicial of genius_musical is
             notaSel              : out std_logic;
             ganhou               : out std_logic;
             perdeu               : out std_logic;
+            perdeuT              : out std_logic;
             db_estado            : out std_logic_vector(4 downto 0)
         );
     end component;
@@ -144,7 +147,7 @@ architecture inicial of genius_musical is
 
 signal  db_sensor_s, db_notas_s, db_medida0_s, db_medida1_s, db_medida2_s, db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
 signal  db_sensor, db_notas, db_medida0, db_medida1, db_medida2, db_estado, db_jogada, db_memoria, db_rodada, db_contagem : std_logic_vector(6 downto 0);
-signal  enviar_config, enviar_jogada, iniciar_df, s_iniciar, s_ganhou, s_perdeu, configurado, medir_nota, zeraI, limpa, notaSel, escreve_aleatorio, registraConfig, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  s_perdeuT, enviar_config, enviar_jogada, iniciar_df, s_iniciar, s_ganhou, s_perdeu, configurado, medir_nota, zeraI, limpa, notaSel, escreve_aleatorio, registraConfig, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 signal  modo : std_logic_vector(1 downto 0);
 signal  db_medida_s: std_logic_vector(11 downto 0);
 
@@ -180,6 +183,7 @@ UC : unidade_controle
     notaSel              => notaSel,
     ganhou               => s_ganhou,
     perdeu               => s_perdeu,
+    perdeuT              => s_perdeuT,
     db_estado            => db_estado_s
 ); 
 
@@ -211,6 +215,7 @@ DF : fluxo_dados
     notaSel             => notaSel,
     ganhou              => s_ganhou,
     perdeu              => s_perdeu,
+    perdeuT             => s_perdeuT,
     iniciar             => iniciar_df,
     trigger             => trigger,
     pwm                 => pwm,
@@ -239,8 +244,9 @@ DF : fluxo_dados
 
   s_iniciar <= (not iniciar) or iniciar_df;
 
-  ganhou <= s_ganhou;
-  perdeu <= s_perdeu;
+  ganhou    <= s_ganhou;
+  perdeu    <= s_perdeu;
+  perdeuT   <= s_perdeuT;
 
   -- debug
   db_jogada_s(4)   <= '0';

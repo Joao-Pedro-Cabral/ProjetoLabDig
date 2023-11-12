@@ -52,6 +52,7 @@ entity fluxo_dados is
           notaSel                  : in  std_logic;
           ganhou                   : in  std_logic;
           perdeu                   : in  std_logic;
+          perdeuT                  : in  std_logic;
 --Saidas
           iniciar                  : out std_logic;
           trigger                  : out std_logic;
@@ -99,11 +100,11 @@ architecture estrutural of fluxo_dados is
   signal s_not_zeraE     : std_logic;
   signal s_not_escreve   : std_logic;
   signal s_not_ativar    : std_logic;
-  signal s_medida_nota, medida_nota     : std_logic_vector(3 downto 0);
+  signal s_medida_nota, medida_nota : std_logic_vector(3 downto 0);
   signal pronto_sensor   : std_logic;
-  signal posicao_servo, posicao_servo2 : std_logic_vector(1 downto 0);
+  signal posicao_servo, posicao_servo2, estado: std_logic_vector(1 downto 0);
   signal venceu1, venceu2 : std_logic;
-  signal configurado_ed, configurado_rx, jogada_rx, configurado_rx2, jogada_rx2: std_logic;
+  signal s_perdeu, configurado_ed, configurado_rx, jogada_rx, configurado_rx2, jogada_rx2: std_logic;
   signal s_config, configuracao_rx  : std_logic_vector(5 downto 0);
   signal s_notas,notas_rx : std_logic_vector(3 downto 0);
 
@@ -247,8 +248,7 @@ architecture estrutural of fluxo_dados is
       enviar_jogada : in  std_logic;
       modo          : in  std_logic_vector(1 downto 0);
       dificuldade   : in  std_logic_vector(3 downto 0);
-      perdeu        : in  std_logic;
-      ganhou        : in  std_logic;
+      estado        : in  std_logic_vector(1 downto 0);
       notas         : in  std_logic_vector(3 downto 0);
       jogador       : in  std_logic;
       jogada        : in  std_logic_vector(3 downto 0);
@@ -506,8 +506,7 @@ begin
       enviar_jogada => enviar_jogada,
       modo          => seletor_modo,
       dificuldade   => seletor_rodada,
-      perdeu        => perdeu,
-      ganhou        => ganhou,
+      estado        => estado,
       notas         => s_notas,
       jogador       => s_rodada(0),
       jogada        => s_endereco,
@@ -519,13 +518,14 @@ begin
     );
 
   -- Determinação da posição do servo
-  venceu1 <= (((not seletor_modo(1)) or seletor_modo(0)) and ganhou) or 
-             ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and (not s_rodada(0))) or (perdeu and s_rodada(0))));
+  s_perdeu <= perdeu or perdeuT;
+  venceu1 <= (((not seletor_modo(1)) or seletor_modo(0)) and ganhou) or
+             ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and (not s_rodada(0))) or (s_perdeu and s_rodada(0))));
   posicao_servo <= "11" when venceu1 = '1' else
                    "00";
 
-  venceu2 <= (((not seletor_modo(1)) or seletor_modo(0)) and perdeu) or
-             ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and s_rodada(0)) or (perdeu and (not s_rodada(0)))));
+  venceu2 <= (((not seletor_modo(1)) or seletor_modo(0)) and s_perdeu) or
+             ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and s_rodada(0)) or (s_perdeu and (not s_rodada(0)))));
   posicao_servo2(1) <= venceu2;
   posicao_servo2(0) <= venceu2;
 
@@ -546,6 +546,12 @@ begin
   -- Muxes para escolha entre físico/Digital Twin
   s_config      <= configuracao_rx when configurado_rx2 = '1' else chaves;
   s_medida_nota <= notas_rx when jogada_rx2 = '1' else medida_nota;
+
+  -- Decisão do estado atual
+  estado <= "11" when perdeuT = '1' else
+            "10" when perdeu  = '1' else
+            "01" when ganhou  = '1' else
+            "00";
 
   -- Determinação dos possíveis fimL
   s_fimL(0)  <= s_rodada(0); -- Inatingível 

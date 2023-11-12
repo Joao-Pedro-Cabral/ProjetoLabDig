@@ -54,6 +54,7 @@ entity unidade_controle is
         notaSel              : out std_logic;
         ganhou               : out std_logic;
         perdeu               : out std_logic;
+        perdeuT              : out std_logic;
         db_estado            : out std_logic_vector(4 downto 0)
     );
 end entity;
@@ -158,7 +159,11 @@ begin
                        '0' when others;
 
     with Eatual select
-        perdeu  <=    '1' when fim_perdeu | envia_fim_perdeu | fim_timeout | envia_fim_timeout,
+        perdeu  <=    '1' when fim_perdeu | envia_fim_perdeu,
+                      '0' when others;
+
+    with Eatual select
+        perdeuT  <=   '1' when fim_timeout | envia_fim_timeout,
                       '0' when others;
 
     with Eatual select

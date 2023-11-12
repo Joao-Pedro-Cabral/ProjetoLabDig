@@ -42,6 +42,7 @@ architecture tb of genius_musical_tb is
       jogador                  : out std_logic;
       ganhou                   : out std_logic;
       perdeu                   : out std_logic;
+      perdeuT                  : out std_logic;
       db_hex0                  : out std_logic_vector(6 downto 0);
       db_hex1                  : out std_logic_vector(6 downto 0);
       db_hex2                  : out std_logic_vector(6 downto 0);
@@ -86,6 +87,7 @@ architecture tb of genius_musical_tb is
   signal jogador_out    : std_logic := '0';
   signal ganhou_out     : std_logic := '0';
   signal perdeu_out     : std_logic := '0';
+  signal perdeuT_out    : std_logic := '0';
 
   -- Configurações do clock
   signal keep_simulating: std_logic := '0'; -- delimita o tempo de geração do clock
@@ -163,6 +165,7 @@ begin
           jogador         => jogador_out,
           ganhou          => ganhou_out,
           perdeu          => perdeu_out,
+          perdeuT         => perdeuT_out,
           db_hex0         => open,
           db_hex1         => open,
           db_hex2         => open,
@@ -239,6 +242,7 @@ begin
     tests(0)   <= notas_out;
     assert ganhou_out   = '0'    report "bad initial ganhou"                      severity error;
     assert perdeu_out   = '0'    report "bad initial perdeu"                      severity error;
+    assert perdeuT_out  = '0'    report "bad initial perdeuT"                     severity error;
     wait for 500*clockPeriod;
     -- Cada iteração corresponde a uma rodada
     for i in 0 to rodada - 1 loop
@@ -264,10 +268,12 @@ begin
           if(k = rodada - 1) then
             assert ganhou_out   = '1'  report "bad ganhou"  severity error;
             assert perdeu_out   = '0'  report "bad perdeu"  severity error;
+            assert perdeuT_out  = '0'  report "bad perdeuT" severity error;
             wait for 5000*clockPeriod;
           else
             assert ganhou_out   = '0' report "bad ganhou"   severity error;
             assert perdeu_out   = '0' report "bad perdeu"   severity error;
+            assert perdeuT_out  = '0' report "bad perdeuT"  severity error;
           end if;
           wait for 15*clockPeriod;
         end loop;
@@ -312,6 +318,7 @@ begin
           end if;
           assert ganhou_out   = '0'      report "bad  ganhou"                             severity error;
           assert perdeu_out   = '0'      report "bad  perdeu"                             severity error;
+          assert perdeuT_out  = '0'      report "bad  perdeuT"                            severity error;
           wait for 15*clockPeriod;
         end loop;
       end if;
