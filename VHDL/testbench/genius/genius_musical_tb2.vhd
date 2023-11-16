@@ -71,7 +71,8 @@ architecture tb of genius_musical_tb2 is
 
   ---- Declaracao de sinais de entrada para conectar o componente
   signal clk_in     : std_logic := '0';
-  signal rst_in     : std_logic := '0';
+  signal rst_in     : std_logic := '1';
+  signal not_rst_in : std_logic := '0';
   signal iniciar_in : std_logic := '1';
   signal ativar_in  : std_logic := '1';
   signal chaves_in  : std_logic_vector(5 downto 0) := "000000";
@@ -95,7 +96,7 @@ architecture tb of genius_musical_tb2 is
 
   -- Configuração de jogo
   constant rodada        : natural := 11; -- Nível de dificuldade
-  constant modo          : natural := 2;
+  constant modo          : natural := 1;
   constant rodada_perder : natural := 3;
   constant jogada_perder : natural := 2;
 
@@ -181,7 +182,7 @@ begin
       transmissor: tx_serial
       port map ( 
           clock           => clk_in,
-          reset           => rst_in,
+          reset           => not_rst_in,
           partida         => partida_in,
           dados_ascii     => dados_tx,
           saida_serial    => rx_in,
@@ -190,6 +191,8 @@ begin
           db_saida_serial => open,
           db_estado       => open
      );
+
+  not_rst_in <= not rst_in;
 
   modo_in        <= std_logic_vector(to_unsigned(modo, 2));
   dificuldade_in <= std_logic_vector(to_unsigned(rodada-1, 4));
@@ -215,9 +218,9 @@ begin
     keep_simulating <= '1';  -- inicia geracao do sinal de clock
 
     -- gera pulso de reset (1 periodo de clock)
-    rst_in <= '1';
-    wait for clockPeriod;
     rst_in <= '0';
+    wait for clockPeriod;
+    rst_in <= '1';
 
     -- espera para inicio dos testes
     wait for 10*clockPeriod;

@@ -222,7 +222,7 @@ begin
                      "01110" when fim_timeout,          -- E
                      "01111" when espera_jogada,        -- F
                      "10000" when envia_config,         -- 10
-                     "10001" when checa_modo,           -- 11
+                     "10001" when espera_iniciar,       -- 11
                      "10010" when mostra_jogada,        -- 12
                      "10011" when espera_mostra_jogada, -- 13
                      "10100" when inicia_mostra_jogada, -- 14
@@ -235,7 +235,7 @@ begin
                      "11011" when envia_ultima_jogada,  -- 1B
                      "11100" when envia_mostra_jogada,  -- 1C
                      "11101" when envia_nova_jogada,    -- 1D
-                     "11110" when espera_iniciar,       -- 1E
+                     "11110" when checa_modo,           -- 1E
                      "00000" when others;
 
 end architecture fsm;

@@ -147,7 +147,7 @@ architecture inicial of genius_musical is
 
 signal  db_sensor_s, db_notas_s, db_medida0_s, db_medida1_s, db_medida2_s, db_estado_s, db_jogada_s, db_memoria_s, db_rodada_s, db_contagem_s : std_logic_vector(4 downto 0);
 signal  db_sensor, db_notas, db_medida0, db_medida1, db_medida2, db_estado, db_jogada, db_memoria, db_rodada, db_contagem : std_logic_vector(6 downto 0);
-signal  s_perdeuT, enviar_config, enviar_jogada, iniciar_df, s_iniciar, s_ganhou, s_perdeu, configurado, medir_nota, zeraI, limpa, notaSel, escreve_aleatorio, registraConfig, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
+signal  s_not_reset, s_perdeuT, enviar_config, enviar_jogada, iniciar_df, s_iniciar, s_ganhou, s_perdeu, configurado, medir_nota, zeraI, limpa, notaSel, escreve_aleatorio, registraConfig, fimI, contaI, fimL, escreve, enderecoIgualRodada, jogada_correta, fimT, zeraCR, contaCR, contaE, zeraE, zeraT, registraRC, jogada : std_logic;
 signal  modo : std_logic_vector(1 downto 0);
 signal  db_medida_s: std_logic_vector(11 downto 0);
 
@@ -156,7 +156,7 @@ begin
 UC : unidade_controle
   port map(
     clock                => clock,
-    reset                => reset,
+    reset                => s_not_reset,
     iniciar              => s_iniciar,
     jogada               => jogada,
     jogada_correta       => jogada_correta,
@@ -242,7 +242,8 @@ DF : fluxo_dados
     db_dado_rx          => db_dado_rx
   );
 
-  s_iniciar <= (not iniciar) or iniciar_df;
+  s_iniciar   <= (not iniciar) or iniciar_df;
+  s_not_reset <= not reset;
 
   ganhou    <= s_ganhou;
   perdeu    <= s_perdeu;

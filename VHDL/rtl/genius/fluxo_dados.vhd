@@ -408,7 +408,7 @@ begin
   temporizador: contador_m
     generic map (
       M => 750000 -- simulacao
-      -- M => 375000000 -- quartus
+      --M => 500000000 -- quartus
     )
     port map (
       clock   => clock,
@@ -521,13 +521,13 @@ begin
   s_perdeu <= perdeu or perdeuT;
   venceu1 <= (((not seletor_modo(1)) or seletor_modo(0)) and ganhou) or
              ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and (not s_rodada(0))) or (s_perdeu and s_rodada(0))));
-  posicao_servo <= "11" when venceu1 = '1' else
-                   "00";
+  posicao_servo <= "10" when venceu1 = '1' else
+                   "01";
 
   venceu2 <= (((not seletor_modo(1)) or seletor_modo(0)) and s_perdeu) or
              ((seletor_modo(1) and (not seletor_modo(0))) and ((ganhou and s_rodada(0)) or (s_perdeu and (not s_rodada(0)))));
-  posicao_servo2(1) <= venceu2;
-  posicao_servo2(0) <= venceu2;
+  posicao_servo2 <= "10" when venceu2 = '1' else
+                    "01";
 
 
   -- Bufferizo os sinais do receptor para usar no ciclo seguinte

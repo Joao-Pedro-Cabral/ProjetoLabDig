@@ -31,15 +31,11 @@ architecture structural of controle_servo is
 begin
   controlador_servo_motor: circuito_pwm
     generic map (
-      -- conf_periodo => 1000000, -- quartus
-      conf_periodo => 1250, -- simulacao
+      conf_periodo => 1000000,
       largura_00   => 0,
-      -- largura_01   => 50000, -- quartus
-      largura_01   => 50, -- simulacao
-      -- largura_10   => 75000, -- quartus
-      largura_10 => 500, -- simulacao
-      -- largura_11   => 100000 -- quartus
-      largura_11 => 100 -- simulacao
+      largura_01   => 50000,
+      largura_10   => 75000,
+      largura_11   => 100000
     )
     port map (
       clock => clock,

@@ -119,9 +119,9 @@ begin
                 dado_00;
 
   -- Dados
-  dado_01 <= "00" & estado2 & notas2;
-  dado_10 <= "01" & '0' & jogador2 & jogada2;
-  dado_11 <= "10" & "00" & rodada2;
+  dado_01 <= "00" & "00" & notas2;
+  dado_10 <= "01" & estado2 & jogada2;
+  dado_11 <= "10" & '0' & jogador2 & rodada2;
   dado_00 <= "11" & modo2 & dificuldade2;
 
 end architecture structural;
