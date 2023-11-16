@@ -4,6 +4,8 @@
 
 #define RXp2 16
 #define TXp2 17
+# define pinBuzzer 23
+int tempoNota = 800; // 800ms por nota
 
 const char* ssid = "Delta 1 152";
 const char* password = "pipoca55";
@@ -52,7 +54,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  if (strcmp(topic, (user + "/Configuracao").c_str()) == 0) {
+  if (strcmp(topic, (user + "/ConfiguracaoTwin").c_str()) == 0) {
     byte modo, dificuldade, config;
     modo = (payload[1] - 48) + 2 * (payload[0] - 48);
     Serial.println(modo);
@@ -62,7 +64,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     config = 0xC0 + modo * 16 + dificuldade;
     Serial.println(config);
     Serial2.write(config);
-  } else if (strcmp(topic, (user + "/Nota").c_str()) == 0) {
+  } else if (strcmp(topic, (user + "/NotaTwin").c_str()) == 0) {
     byte nota, nota_tx;
     nota = (payload[3] - 48) + 2 * (payload[2] - 48) + 4 * (payload[1] - 48) +
            8 * (payload[0] - 48);
@@ -93,13 +95,70 @@ void connect_mqtt() {
     }
   }
   // Publicações
-  client.publish((user + "/Nota").c_str(), "0");
-  client.publish((user + "/Rodada").c_str(), "0");
-  client.publish((user + "/Jogada").c_str(), "0");
-  client.publish((user + "/Configuracao").c_str(), "0");
+  client.publish((user + "/NotaESP").c_str(), "0");
+  client.publish((user + "/RodadaESP").c_str(), "0");
+  client.publish((user + "/JogadaESP").c_str(), "0");
+  client.publish((user + "/ConfiguracaoESP").c_str(), "0");
   // Inscrições
-  client.subscribe((user + "/Configuracao").c_str());
-  client.subscribe((user + "/Nota").c_str());
+  client.subscribe((user + "/ConfiguracaoTwin").c_str());
+  client.subscribe((user + "/NotaTwin").c_str());
+}
+
+void play_buzzer(int nota) {
+  // Escolher a nota musical (Escala Diatônica C-Major) -> Uma oitava acima(*2)
+  Serial.print("Nota: ");
+  Serial.println(nota);
+  switch(nota) {
+    case 1:
+      tone(pinBuzzer, 784*2, tempoNota); //G5
+      delay(tempoNota);
+      break;
+    case 2:
+      tone(pinBuzzer, 699*2, tempoNota); //F5
+      delay(tempoNota);
+      break;
+    case 3:
+      tone(pinBuzzer, 659*2, tempoNota); //E5
+      delay(tempoNota);
+      break;
+    case 4:
+      tone(pinBuzzer, 587*2, tempoNota); //D5
+      delay(tempoNota);
+      break;
+    case 5:
+      tone(pinBuzzer, 523*2, tempoNota); //C5
+      delay(tempoNota);
+      break;
+    case 6:
+      tone(pinBuzzer,494*2 , tempoNota); //B4
+      delay(tempoNota);
+      break;
+    case 7:
+      tone(pinBuzzer, 440*2, tempoNota); //A4
+      delay(tempoNota);
+      break;
+    case 8:
+      tone(pinBuzzer, 392*2, tempoNota); //G4
+      delay(tempoNota);
+      break;
+    case 9:
+      tone(pinBuzzer, 349*2, tempoNota); //F4
+      delay(tempoNota);
+      break;
+    case 10:
+      tone(pinBuzzer, 330*2, tempoNota); //E4
+      delay(tempoNota);
+      break;
+    case 11:
+      tone(pinBuzzer, 293*2, tempoNota); //D4
+      delay(tempoNota);
+      break;
+    case 12:
+      tone(pinBuzzer, 262*2, tempoNota); //C4
+      delay(tempoNota);
+      break;
+    // Entrada inválida ou 0 -> Não há nota
+  }
 }
 
 void send_mqtt_data() {
@@ -116,14 +175,16 @@ void send_mqtt_data() {
   sprintf(msgm, "%d", dado);
   Serial.print("Texto convertido: ");
   Serial.println(msgm);
-  if (index == 0)
-    client.publish((user + "/Nota").c_str(), msgm);
+  if (index == 0) {
+    client.publish((user + "/NotaESP").c_str(), msgm);
+    play_buzzer(dado);
+  }
   else if (index == 1)
-    client.publish((user + "/Rodada").c_str(), msgm);
+    client.publish((user + "/RodadaESP").c_str(), msgm);
   else if (index == 2)
-    client.publish((user + "/Jogada").c_str(), msgm);
+    client.publish((user + "/JogadaESP").c_str(), msgm);
   else if (index == 3)
-    client.publish((user + "/Configuracao").c_str(), msgm);
+    client.publish((user + "/ConfiguracaoESP").c_str(), msgm);
 }
 
 void setup() {
@@ -133,6 +194,8 @@ void setup() {
   // Wi-fi
   setup_wifi();
   connect_mqtt();
+  // Entrada do Buzzer Passivo -> Regular a frequência
+  pinMode(pinBuzzer, OUTPUT);
 }
 
 void loop() {
