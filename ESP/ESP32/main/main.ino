@@ -4,7 +4,9 @@
 
 #define RXp2 16
 #define TXp2 17
-# define pinBuzzer 23
+#define TXp0 1
+#define RXp0 3
+#define pinBuzzer 23
 int tempoNota = 800; // 800ms por nota
 
 const char* ssid = "Delta 1 152";
@@ -64,6 +66,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     config = 0xC0 + modo * 16 + dificuldade;
     Serial.println(config);
     Serial2.write(config);
+    Serial2.read();
   } else if (strcmp(topic, (user + "/NotaTwin").c_str()) == 0) {
     byte nota, nota_tx;
     nota = (payload[3] - 48) + 2 * (payload[2] - 48) + 4 * (payload[1] - 48) +
@@ -72,6 +75,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     nota_tx = nota;
     Serial.println(nota_tx);
     Serial2.write(nota_tx);
+    Serial2.read();
   }
 }
 
@@ -190,6 +194,7 @@ void send_mqtt_data() {
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  //Serial1.begin(115200, SERIAL_8O1, RXp0, TXp0);
   Serial2.begin(115200, SERIAL_8O1, RXp2, TXp2);
   // Wi-fi
   setup_wifi();

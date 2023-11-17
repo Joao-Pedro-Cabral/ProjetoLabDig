@@ -1,17 +1,12 @@
 
-from MQTT import *
 import pygame
 
 class Botao:
 
-    def __init__(self, texto, x_pos, y_pos, topico, apertado, solto, client):
+    def __init__(self, texto, x_pos, y_pos):
         self.texto    = texto
         self.x_pos    = x_pos
         self.y_pos    = y_pos
-        self.apertado = apertado
-        self.solto    = solto
-        self.topico   = topico
-        self.client   = client
 
     def desenhar(self, font, screen):
         botao_texto = font.render(self.texto, True, "black")
@@ -28,9 +23,3 @@ class Botao:
             return True
         else:
             return False
-    
-    def publicar_apertado(self):
-        publicar(self.client, self.topico, self.apertado)
-
-    def publicar_solto(self):
-        publicar(self.client, self.topico, self.solto)
