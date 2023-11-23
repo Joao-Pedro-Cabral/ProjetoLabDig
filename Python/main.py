@@ -3,8 +3,9 @@ from MQTT import *
 import pygame
 from Botao import Botao
 
+
 def main():
-    client = connect_mqtt()
+    client = MyMQTT.connect_mqtt(on_message, on_connect)
     client.loop_start()
     pygame.init()
     WIDTH = 600
@@ -15,29 +16,46 @@ def main():
     timer = pygame.time.Clock()
     pygame.display.set_caption("Genius Musical")
     while True:
-        configurado, terminar = tela_inicio(font_padrao, font_titulo, fps, timer, client, 600, 600)
+        configurado, terminar = tela_inicio(
+            font_padrao, font_titulo, fps, timer, 600, 600)
         if terminar:
             break
         if not configurado:
-          modo, configurado, terminar = tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT)
-          if terminar:
-              break
-          if not configurado:
-            dificuldade, configurado, terminar = tela_dificuldade(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT)
+            modo, configurado, terminar = tela_modo(
+                font_padrao, font_titulo, fps, timer, WIDTH, HEIGHT)
             if terminar:
                 break
             if not configurado:
-              publicar(client, "emqx2/ConfiguracaoTwin", modo + dificuldade)
-        limpar_configurado()
+                dificuldade, configurado, terminar = tela_dificuldade(
+                    font_padrao, font_titulo, fps, timer, WIDTH, HEIGHT)
+                if terminar:
+                    break
+                if not configurado:
+                    MQTT.publicar(
+                        client, "emqx2/ConfiguracaoTwin", modo + dificuldade)
+        MyMQTT.clear_configurado()
         # if(tela_jogo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT, jogadores)):
         #     break
 
     pygame.quit()
 
-def tela_inicio(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
+
+def on_message(client, userdata, msg):
+    MyMQTT.analisar_msgm(msg)
+
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to MQTT Broker!")
+    else:
+        print("Failed to connect, return code %d\n", rc)
+
+
+def tela_inicio(font_padrao, font_titulo, fps, timer, WIDTH, HEIGHT):
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
     screen.fill("white")
-    titulo = font_titulo.render("Genius Musical", True, "black", (250, 250, 250))
+    titulo = font_titulo.render(
+        "Genius Musical", True, "black", (250, 250, 250))
     run = True
     terminar = False
     new_press = True
@@ -63,12 +81,13 @@ def tela_inicio(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
             if event.type == pygame.QUIT:
                 run = False
                 terminar = True
-        configurado = ler_configurado()
+        configurado = MyMQTT.get_configurado()
         pygame.display.flip()
 
     return configurado, terminar
 
-def tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
+
+def tela_modo(font_padrao, font_titulo, fps, timer, WIDTH, HEIGHT):
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
     screen.fill("white")
     run = True
@@ -77,12 +96,13 @@ def tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
     terminar = False
     configurado = False
     modo = "00"
-    botao_Treino1   = Botao("Treino 1", 100, 225)
-    botao_Treino2   = Botao("Treino 2", 350, 225)
-    botao_Multi     = Botao("PvP", 100, 275)
+    botao_Treino1 = Botao("Treino 1", 100, 225)
+    botao_Treino2 = Botao("Treino 2", 350, 225)
+    botao_Multi = Botao("PvP", 100, 275)
     botao_Aleatorio = Botao("Aleatório", 350, 275)
     screen.fill("white")
-    titulo = font_titulo.render("Escolha o Modo de Jogo", True, "black", (250, 250, 250))
+    titulo = font_titulo.render(
+        "Escolha o Modo de Jogo", True, "black", (250, 250, 250))
     botao_Treino1.desenhar(font_padrao, screen)
     botao_Treino2.desenhar(font_padrao, screen)
     botao_Multi.desenhar(font_padrao, screen)
@@ -94,7 +114,7 @@ def tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
 
         if pygame.mouse.get_pressed()[0] and new_press:
             new_press = False
-            apertado  = True
+            apertado = True
             if botao_Treino1.check_click():
                 modo = "00"
             elif botao_Treino2.check_click():
@@ -113,36 +133,38 @@ def tela_modo(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
             if event.type == pygame.QUIT:
                 run = False
                 terminar = True
-        
-        configurado = ler_configurado()
+
+        configurado = MyMQTT.get_configurado()
         pygame.display.flip()
 
     return modo, configurado, terminar
 
-def tela_dificuldade(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT):
+
+def tela_dificuldade(font_padrao, font_titulo, fps, timer, WIDTH, HEIGHT):
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
     screen.fill("white")
-    titulo = font_titulo.render("Escolha o número de rodadas", True, "black", (250, 250, 250))
+    titulo = font_titulo.render(
+        "Escolha o número de rodadas", True, "black", (250, 250, 250))
     run = True
     new_press = True
-    terminar  = False
+    terminar = False
     configurado = False
     dificuldade = "0000"
-    botao2    = Botao("2",  25,  200)
-    botao3    = Botao("3",  225, 200)
-    botao4    = Botao("4",  425, 200)
-    botao5    = Botao("5",  25,  250)
-    botao6    = Botao("6",  225, 250)
-    botao7    = Botao("7",  425, 250)
-    botao8    = Botao("8",  25,  300)
-    botao9    = Botao("9",  225, 300)
-    botao10   = Botao("10", 425, 300)
-    botao11   = Botao("11", 25,  350)
-    botao12   = Botao("12", 225, 350)
-    botao13   = Botao("13", 425, 350)
-    botao14   = Botao("14", 25,  400)
-    botao15   = Botao("15", 225, 400)
-    botao16   = Botao("16", 425, 400)
+    botao2 = Botao("2",  25,  200)
+    botao3 = Botao("3",  225, 200)
+    botao4 = Botao("4",  425, 200)
+    botao5 = Botao("5",  25,  250)
+    botao6 = Botao("6",  225, 250)
+    botao7 = Botao("7",  425, 250)
+    botao8 = Botao("8",  25,  300)
+    botao9 = Botao("9",  225, 300)
+    botao10 = Botao("10", 425, 300)
+    botao11 = Botao("11", 25,  350)
+    botao12 = Botao("12", 225, 350)
+    botao13 = Botao("13", 425, 350)
+    botao14 = Botao("14", 25,  400)
+    botao15 = Botao("15", 225, 400)
+    botao16 = Botao("16", 425, 400)
     screen.fill("white")
     botao2.desenhar(font_padrao, screen)
     botao3.desenhar(font_padrao, screen)
@@ -208,8 +230,8 @@ def tela_dificuldade(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT
             if event.type == pygame.QUIT:
                 run = False
                 terminar = True
-        
-        configurado = ler_configurado()
+
+        configurado = MyMQTT.get_configurado()
         pygame.display.flip()
 
     return dificuldade, configurado, terminar
@@ -314,9 +336,11 @@ def tela_dificuldade(font_padrao, font_titulo, fps, timer, client, WIDTH, HEIGHT
 #                 screen.blit(font_titulo.render("Perdeu!", True, "black", (250, 250, 250)), (250, 150))
 #             reiniciar = True
 #             botaoReiniciar.desenhar(font_padrao, screen)
-        
+
 #         pygame.display.update()
 
 #     return terminar
 
+
+MyMQTT = MQTT()
 main()
