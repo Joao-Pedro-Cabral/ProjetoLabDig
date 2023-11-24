@@ -7,15 +7,15 @@ class MQTT:
 
     def __init__(self):
         self.notas = -1
-        self.estado = -1
-        self.jogada = -1
-        self.jogador = -1
-        self.rodada = -1
-        self.modo = -1
-        self.dificuldade = -1
+        self.estado = 0
+        self.jogada = 0
+        self.jogador = 0
+        self.rodada = 0
+        self.modo = 0
+        self.dificuldade = 0
         self.configurado = 0
 
-        # Conectando com o Broker
+    # Conectando com o Broker
     def connect_mqtt(self, on_message, on_connect):
         broker = 'broker.emqx.io'
         port = 1883
@@ -40,7 +40,7 @@ class MQTT:
         else:
             print("Failed to send message to " + topic)
 
-        # Call back das mensagens
+    # Call back das mensagens
     def analisar_msgm(self, msg):
         print("%s %s" % (msg.topic, msg.payload))
         if (msg.topic == "emqx2/NotaESP"):
@@ -75,38 +75,50 @@ class MQTT:
         self.notas = -1
         return notas2
 
-    def get_estado(self):
-        estado2 = self.estado
-        self.estado = -1
-        return estado2
+    def perdeu(self):
+        return (self.estado == 2 or self.estado == 3)
+
+    def perdeu_timeout(self):
+        return (self.estado == 3)
+
+    def ganhou(self):
+        return (self.estado == 1)
 
     def get_jogada(self):
-        jogada2 = self.jogada
-        self.jogada = -1
-        return jogada2
+        return self.jogada
 
     def get_jogador(self):
-        jogador2 = self.jogador
-        self.jogador = -1
-        return jogador2
+        return self.jogador
 
     def get_rodada(self):
-        rodada2 = self.rodada
-        self.rodada = -1
-        return rodada2
+        return self.rodada
 
     def get_modo(self):
-        modo2 = self.modo
-        self.modo = -1
-        return modo2
+        return self.modo
 
     def get_dificuldade(self):
-        dificuldade2 = self.dificuldade
-        self.dificuldade = -1
-        return dificuldade2
+        return self.dificuldade
 
     def get_configurado(self):
         return self.configurado
 
     def clear_configurado(self):
+        self.configurado = 0
+
+    def clear_all(self):
+        self.notas = -1
+        self.estado = 0
+        self.jogada = 0
+        self.jogador = 0
+        self.rodada = 0
+        self.modo = 0
+        self.dificuldade = 0
+        self.configurado = 0
+
+    def clear_except_config(self):
+        self.notas = -1
+        self.estado = 0
+        self.jogada = 0
+        self.jogador = 0
+        self.rodada = 0
         self.configurado = 0
