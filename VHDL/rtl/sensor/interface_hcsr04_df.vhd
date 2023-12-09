@@ -139,7 +139,7 @@ begin
 
   temporizador_timeout: contador_m
     generic map(
-      -- M => 37500000 -- 0.75s: quartus
+      -- M => 25000000 -- 0.5s: quartus
       M => 5000 -- 100us: simulacao
     )
     port map(
