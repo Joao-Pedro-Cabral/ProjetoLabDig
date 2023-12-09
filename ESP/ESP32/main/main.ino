@@ -7,7 +7,7 @@
 #define TXp0 1
 #define RXp0 3
 #define pinBuzzer 23
-int tempoNota = 800; // 800ms por nota
+int tempoNota = 800;  // 800ms por nota
 
 const char* ssid = "Delta 1 152";
 const char* password = "pipoca55";
@@ -24,7 +24,7 @@ unsigned long lastMsg = 0;
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
 
-int tempoMQTT = 1000;
+int tempoMQTT = 100;
 
 void setup_wifi() {
   delay(10);
@@ -112,56 +112,56 @@ void play_buzzer(int nota) {
   // Escolher a nota musical (Escala Diatônica C-Major) -> Uma oitava acima(*2)
   Serial.print("Nota: ");
   Serial.println(nota);
-  switch(nota) {
+  switch (nota) {
     case 1:
-      tone(pinBuzzer, 784*2, tempoNota); //G5
+      tone(pinBuzzer, 784 * 2, tempoNota);  // G5
       delay(tempoNota);
       break;
     case 2:
-      tone(pinBuzzer, 699*2, tempoNota); //F5
+      tone(pinBuzzer, 699 * 2, tempoNota);  // F5
       delay(tempoNota);
       break;
     case 3:
-      tone(pinBuzzer, 659*2, tempoNota); //E5
+      tone(pinBuzzer, 659 * 2, tempoNota);  // E5
       delay(tempoNota);
       break;
     case 4:
-      tone(pinBuzzer, 587*2, tempoNota); //D5
+      tone(pinBuzzer, 587 * 2, tempoNota);  // D5
       delay(tempoNota);
       break;
     case 5:
-      tone(pinBuzzer, 523*2, tempoNota); //C5
+      tone(pinBuzzer, 523 * 2, tempoNota);  // C5
       delay(tempoNota);
       break;
     case 6:
-      tone(pinBuzzer,494*2 , tempoNota); //B4
+      tone(pinBuzzer, 494 * 2, tempoNota);  // B4
       delay(tempoNota);
       break;
     case 7:
-      tone(pinBuzzer, 440*2, tempoNota); //A4
+      tone(pinBuzzer, 440 * 2, tempoNota);  // A4
       delay(tempoNota);
       break;
     case 8:
-      tone(pinBuzzer, 392*2, tempoNota); //G4
+      tone(pinBuzzer, 392 * 2, tempoNota);  // G4
       delay(tempoNota);
       break;
     case 9:
-      tone(pinBuzzer, 349*2, tempoNota); //F4
+      tone(pinBuzzer, 349 * 2, tempoNota);  // F4
       delay(tempoNota);
       break;
     case 10:
-      tone(pinBuzzer, 330*2, tempoNota); //E4
+      tone(pinBuzzer, 330 * 2, tempoNota);  // E4
       delay(tempoNota);
       break;
     case 11:
-      tone(pinBuzzer, 293*2, tempoNota); //D4
+      tone(pinBuzzer, 293 * 2, tempoNota);  // D4
       delay(tempoNota);
       break;
     case 12:
-      tone(pinBuzzer, 262*2, tempoNota); //C4
+      tone(pinBuzzer, 262 * 2, tempoNota);  // C4
       delay(tempoNota);
       break;
-    // Entrada inválida ou 0 -> Não há nota
+      // Entrada inválida ou 0 -> Não há nota
   }
 }
 
@@ -182,11 +182,10 @@ void send_mqtt_data() {
   if (index == 0) {
     client.publish((user + "/NotaESP").c_str(), msgm);
     play_buzzer(dado);
-  }
-  else if (index == 1)
-    client.publish((user + "/RodadaESP").c_str(), msgm);
-  else if (index == 2)
+  } else if (index == 1)
     client.publish((user + "/JogadaESP").c_str(), msgm);
+  else if (index == 2)
+    client.publish((user + "/RodadaESP").c_str(), msgm);
   else if (index == 3)
     client.publish((user + "/ConfiguracaoESP").c_str(), msgm);
 }
@@ -194,7 +193,7 @@ void send_mqtt_data() {
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  //Serial1.begin(115200, SERIAL_8O1, RXp0, TXp0);
+  // Serial1.begin(115200, SERIAL_8O1, RXp0, TXp0);
   Serial2.begin(115200, SERIAL_8O1, RXp2, TXp2);
   // Wi-fi
   setup_wifi();
